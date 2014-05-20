@@ -3,12 +3,13 @@
 
 
 import bpy
+import copy
 import math
 import mathutils 
 from mathutils import Vector
 def addSpherePoints(pointA,pointB):
-    bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.5, location=(pointA))
-    #bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.2, location=(pointB))
+    #bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.5, location=(pointA))
+    bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.2, location=(pointB))
 def addBezier(pointA,pointB):
     bpy.ops.curve.primitive_bezier_curve_add()
     obj = bpy.context.object
@@ -67,17 +68,17 @@ def add_prism(pointA,pointB,thickness):
 #for ob in bpy.data.objects:
 #    obLoc= ob.location
 def main():
-    print("----running ALPS")
     for ob in bpy.context.selected_objects:
-    #for ob in bpy.data.objects:
-        #ob.select=False
-        #connect to all others
-        for ob_B in bpy.context.selected_objects:
-            print(ob.name+"----"+ob_B.name)
-            #if ob.name != ob_B.name:
-            addSpherePoints(ob.location,ob_B.location)
-            addBezier(ob.location,ob_B.location)
+        selectionIndex=len(bpy.context.selected_objects)
+        if  selectionIndex!=0:
+            mainObject = bpy.context.selected_objects[selectionIndex-1]          
+            mainObject.select=False
             
+            for ob_B in bpy.context.selected_objects:
+                locA=copy.copy(mainObject.location)
+                locB=copy.copy(ob_B.location)
+                addSpherePoints(locA,locB)
+                addBezier(locA,locB)            
         #deselect
         #new active
     #addSpherePoints(bpy.data.objects['Cube.001'].location,bpy.data.objects['Cube'].location)
