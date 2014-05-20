@@ -7,9 +7,11 @@ import copy
 import math
 import mathutils 
 from mathutils import Vector
+def addSpherePointsSingle(pointA):
+    bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.5, location=(pointA))
 def addSpherePoints(pointA,pointB):
-    #bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.5, location=(pointA))
-    bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.2, location=(pointB))
+    bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.5, location=(pointA))
+    #bpy.ops.surface.primitive_nurbs_surface_sphere_add(radius=.2, location=(pointB))
 def addBezier(pointA,pointB):
     bpy.ops.curve.primitive_bezier_curve_add()
     obj = bpy.context.object
@@ -39,11 +41,6 @@ def add_prism(pointA,pointB,thickness):
     originPoint=Vector((0,0,0))
 
     LineNormal = mathutils.geometry.normal(pointA,pointB,originPoint)
-    
-    #six verts
-    #verts=[pointA,pointB]
-    #verts+=[pointA + Vector((1,0,0))*LineNormal,pointB + Vector((1,0,0))*LineNormal] 
-    #verts+=[pointA + Vector((0,1,0))*LineNormal,pointB + Vector((0,1,0))*LineNormal] 
     verts=[pointA,pointB,pointA + Vector((1,0,0))*LineNormal,pointB + Vector((1,0,0))*LineNormal,pointA + Vector((0,1,0))*LineNormal,pointB + Vector((0,1,0))*LineNormal]
     #5 faces
     faces= [
@@ -63,25 +60,30 @@ def add_prism(pointA,pointB,thickness):
     scene.objects.link(cube_object)      
     cube_object.select = True  
 
-    
-#for ob in bpy.context.selected_objects:  
-#for ob in bpy.data.objects:
-#    obLoc= ob.location
-def main():
+
+def rename():
     for ob in bpy.context.selected_objects:
-        selectionIndex=len(bpy.context.selected_objects)
-        if  selectionIndex!=0:
-            mainObject = bpy.context.selected_objects[selectionIndex-1]          
-            mainObject.select=False
-            
-            for ob_B in bpy.context.selected_objects:
-                locA=copy.copy(mainObject.location)
-                locB=copy.copy(ob_B.location)
-                addSpherePoints(locA,locB)
-                addBezier(locA,locB)            
-        #deselect
-        #new active
-    #addSpherePoints(bpy.data.objects['Cube.001'].location,bpy.data.objects['Cube'].location)
-    #addBezier(bpy.data.objects['Cube.001'].location,bpy.data.objects['Cube'].location)
-    #add_prism(bpy.data.objects['Cube.001'].location,bpy.data.objects['Cube'].location,0)
-main()
+        ob.name="linkcube"
+def checkname(a):
+    nameSegments = a.name.replace(".","_")
+    nameSegments = nameSegments.split('_')
+    for seg in nameSegments:
+        if ( seg in ['linkcube']):
+            return True
+        else:
+            return False
+def main():
+    print("main loop start")
+    for ob in bpy.data.objects:
+        if checkname:
+            ob.name="lcfinished"
+            locA=copy.copy(ob.location)
+            addSpherePointsSingle(locA)
+            for ob_B in bpy.data.objects:
+                if checkname(ob_B) and ob_B.name!=ob.name:
+                    print("activeobject"+ob.name+"innerLoop"+ob_B.name)
+                    locB=(ob_B.location)
+                    addSpherePoints(locA,locB)
+                    addBezier(locA,locB)
+               
+rename()
