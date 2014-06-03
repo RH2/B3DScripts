@@ -8,25 +8,32 @@ KEYFRAME_ROTATION = True
 KEYFRAME_SCALE = False
 KEYFRAME_VISIBILITY = False  # Viewport and render visibility.
 
-def create_objects_for_particles(ps, obj):
+def create_objects_for_particles(deadParticles, obj, end_frame):
     # Duplicate the given object for every particle and return the duplicates.
     # Use instances instead of full copies.
     obj_list = []
+    livingParticles=[]
     mesh = obj.data
-    for i, _ in enumerate(ps.particles):
+    for i, _ in enumerate(deadParticles):
         dupli = bpy.data.objects.new(
                     name="particle.{:03d}".format(i),
                     object_data=mesh)
         bpy.context.scene.objects.link(dupli)
         obj_list.append(dupli)
     return obj_list
-
-def match_and_keyframe_objects(ps, obj_list, start_frame, end_frame):
+def notAliveAtEnd(ps,end_frame):
+    deadParticles = []
+    bpy.context.scene.frame_set(end_frame)
+    for p in ps.particles:
+        if p.alive_state== "DEAD":
+            deadParticles.append(p)
+    return deadParticles
+def match_and_keyframe_objects(deadParticles, obj_list, start_frame, end_frame):
     # Match and keyframe the objects to the particles for every frame in the
     # given range.
     for frame in range(start_frame, end_frame + 1):
         bpy.context.scene.frame_set(frame)
-        for p, obj in zip(ps.particles, obj_list):
+        for p, obj in zip(deadParticles, obj_list):
             match_object_to_particle(p, obj)
             keyframe_obj(obj)
 def MarkDirty(obj_list):
@@ -34,14 +41,6 @@ def MarkDirty(obj_list):
         bpy.context.scene.objects.active = ob
         bpy.ops.object.group_link(group="Reactors")
         #ob.group_link(group="Reactors")
-def aliveAtEnd(ps,end_frame):
-    livingParticles = []
-    bpy.context.scene.frame_set(end_frame)
-    for p in ps.particles:
-        if p.alive_state== "ALIVE":
-        livingParticles+=p
-    return livingParticles
-
 def match_object_to_particle(p, obj):
     aliveOnThisFrame=False
     if p.alive_state== "ALIVE":
@@ -51,9 +50,6 @@ def match_object_to_particle(p, obj):
     if p.alive_state== "ALIVE":
         aliveOnNextFrame=True
     bpy.context.scene.frame_set(bpy.context.scene.frame_current-1)    
-
-
-
     if aliveOnThisFrame==True and aliveOnNextFrame==False:
     #if p.alive_state == 'DYING':
         bpy.context.scene.objects.active = obj
@@ -62,6 +58,7 @@ def match_object_to_particle(p, obj):
         psys = obj.particle_systems[-1]
         psys.name='Reactor_SET.A'
         pset = psys.settings
+        pset.count = 200
         pset.frame_start = bpy.context.scene.frame_current
         pset.frame_end = bpy.context.scene.frame_current+5
         pset.effector_weights.gravity = 0
@@ -106,8 +103,8 @@ def main():
     ps = ps_obj.particle_systems[0]  # Assume only 1 particle system is present.
     start_frame = bpy.context.scene.frame_start
     end_frame = bpy.context.scene.frame_end
-    alive_list = aliveAtEnd(ps,end_frame) 
-    obj_list = create_objects_for_particles(ps, obj)
+    ps=notAliveAtEnd(ps,end_frame)
+    obj_list = create_objects_for_particles(ps, obj, end_frame)
     MarkDirty(obj_list)
     match_and_keyframe_objects(ps, obj_list, start_frame, end_frame)
 
