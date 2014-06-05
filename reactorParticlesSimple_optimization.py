@@ -51,8 +51,9 @@ def match_object_to_particle(p, obj):
         aliveOnNextFrame=True
     bpy.context.scene.frame_set(bpy.context.scene.frame_current-1)    
     if aliveOnThisFrame==True and aliveOnNextFrame==False:
-    #if p.alive_state == 'DYING':
+    #if p.alive_state == 'DYING': 
         bpy.context.scene.objects.active = obj
+        bpy.ops.object.group_link(group="Reactors")
         bpy.ops.object.shade_smooth()
         bpy.ops.object.particle_system_add()
         psys = obj.particle_systems[-1]
@@ -60,7 +61,7 @@ def match_object_to_particle(p, obj):
         pset = psys.settings
         pset.count = 200
         pset.frame_start = bpy.context.scene.frame_current
-        pset.frame_end = bpy.context.scene.frame_current+5
+        pset.frame_end = bpy.context.scene.frame_current+1
         pset.effector_weights.gravity = 0
         pset.normal_factor= 8
         pset.use_render_emitter= False
@@ -71,6 +72,7 @@ def match_object_to_particle(p, obj):
         pset.angular_velocity_factor= 8.5
         pset.rotation_factor_random = 0.5
         pset.phase_factor_random = 0.4
+        pset.lifetime = 5
     loc = p.location
     rot = p.rotation
     size = p.size
@@ -105,7 +107,7 @@ def main():
     end_frame = bpy.context.scene.frame_end
     ps=notAliveAtEnd(ps,end_frame)
     obj_list = create_objects_for_particles(ps, obj, end_frame)
-    MarkDirty(obj_list)
+    #MarkDirty(obj_list)
     match_and_keyframe_objects(ps, obj_list, start_frame, end_frame)
 
 if __name__ == '__main__':
