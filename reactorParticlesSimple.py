@@ -24,9 +24,10 @@ def create_objects_for_particles(ps, obj):
 def match_and_keyframe_objects(ps, obj_list, start_frame, end_frame):
     # Match and keyframe the objects to the particles for every frame in the
     # given range.
+    livingParticles = aliveAtEnd(ps,end_frame)
     for frame in range(start_frame, end_frame + 1):
         bpy.context.scene.frame_set(frame)
-        for p, obj in zip(ps.particles, obj_list):
+        for p, obj in zip(ps.particles-livingParticles, obj_list):
             match_object_to_particle(p, obj)
             keyframe_obj(obj)
 def MarkDirty(obj_list):
@@ -34,6 +35,14 @@ def MarkDirty(obj_list):
         bpy.context.scene.objects.active = ob
         bpy.ops.object.group_link(group="Reactors")
         #ob.group_link(group="Reactors")
+def aliveAtEnd(ps,end_frame):
+    livingParticles = []
+    bpy.context.scene.frame_set(end_frame)
+    for p in ps.particles:
+        if p.alive_state== "ALIVE":
+        livingParticles+=p
+    return livingParticles
+
 def match_object_to_particle(p, obj):
     aliveOnThisFrame=False
     if p.alive_state== "ALIVE":
