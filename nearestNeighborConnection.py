@@ -3,64 +3,90 @@ import math
 import mathutils
 import copy
 from bpy.props import BoolProperty
+
+###################################################
+####################    SECTION 1      BEGIN SCRIPT
+###################################################
+
 print("RUNNING...")
-if not 'Reactors' in bpy.data.groups:
+if not 'dynaLines' in bpy.data.groups:
     bpy.ops.group.create(name="dynaLines") 
+
+###################################################
+####################    SECTION 2    MATERIAL SETUP
+###################################################    
 
 lineMaterial=[]
 for material in bpy.data.materials:
     if material.name == "line" or "Line" or "LINE":
         lineMaterial=material
+
+###################################################
+####################    SECTION 3    
+###################################################
+
+
 bpy.ops.object.select_all(action='DESELECT')
 bpy.ops.object.select_same_group(group="Points")
 pointList= []
 pointList=copy.copy(bpy.context.selected_objects)
 
 
+###################################################
+####################    SECTION 4     FRAME HANDLER    
+###################################################
 
 def my_handler(scene): 
-    override = {'selected_bases': list(bpy.context.scene.object_bases)}
-    if bpy.context.scene['lineGenActivate'] == False:
-        a=1 
     #print("Frame Change", scene.frame_current)
-    if bpy.context.scene['lineGenActivate'] == True:
+    #if bpy.context.scene['lineGenActivate'] == False:
+        #indexA=1 
+    activationFlag = bpy.context.scene['lineGenActivate']
+    if activationFlag == True:
         ANIM_DIST=bpy.context.scene['animDist']
-        bpy.ops.object.select_all(action='DESELECT')
-        bpy.ops.object.select_same_group(group="dynaLines")
-        bpy.ops.object.delete() 
-        #go through each object in the group
+        #go through each object in the group (set up index boundaries)
         xLength = len(pointList) #-1 
-        a=0
-        childCurveIndex=0 
+        indexA=0
         bpy.ops.object.select_all(action='DESELECT')
-        bpy.ops.curve.primitive_bezier_curve_add()
-        obj = bpy.context.object
-        bpy.ops.object.group_link(group='dynaLines')
-        obj.material_slots.data.active_material= lineMaterial
-        obj.data.dimensions = '3D'
-        obj.data.fill_mode = 'FULL'
-        obj.data.bevel_depth = 0.1#-(1-distance/ANIM_DIST)*.08
-        obj.data.bevel_resolution = 0 #0=4points,#1=6points
-        obj.data.resolution_u=1
+
+
+        ############################
+        #       ARRAY TO HOLD POINTS    
+        ############################
+        coordinate_Pairs = []
+
+
         for x in pointList:
-            a= a+1
-            if a <= xLength:
-                for indexY in range(a,xLength):
+            indexA= indexA+1
+            if indexA <= xLength:
+                for indexY in range(indexA,xLength):
                     y= pointList[indexY]
                     locX=x.location
                     locY=pointList[indexY].location
                     distance = math.sqrt( (locX[0] - locY[0])**2 + (locX[1] - locY[1])**2 + (locX[2] - locY[2])**2)
                     if distance <= ANIM_DIST:
-                        # set first point to centre of sphere1
-                        obj.data.splines[childCurveIndex].bezier_points[0].co = locX
-                        obj.data.splines[childCurveIndex].bezier_points[0].handle_left_type = 'VECTOR'
-                        # set second point to centre of sphere2
-                        obj.data.splines[childCurveIndex].bezier_points[1].co = locY
-                        obj.data.splines[childCurveIndexa].bezier_points[1].handle_left_type = 'VECTOR'
-                        bpy.ops.object.group_link(group='dynaLines')
-                        childCurveIndex=childCurveIndex+1                                  
-        #bpy.ops.object.select_all(action='DESELECT')
-        #bpy.ops.object.select_same_group(group="dynaLines")
+                        coordinate_Pairs.append(locX)
+                        coordinate_Pairs.append(locY)
+
+        #create curve from inside coordinate_Pairs
+        #Curve_OBJECT = bpy.data.objects.new(name="MyObject", object_data=cu)
+        #scene = bpy.context.scene
+        #scene.objects.link(Curve_OBJECT)
+
+    ############################
+    # TODO GENERATE CURVE OBJECT   
+    ############################
+
+
+
+
+
+
+
+###################################################
+####################    SECTION 5   UI/REGISTRATION
+###################################################
+
+
 class ToolsPanel(bpy.types.Panel):
     bl_label = "Animatable Threshold Line Generator"
     bl_space_type = "PROPERTIES"
@@ -77,13 +103,13 @@ class ToolsPanel(bpy.types.Panel):
         #FILE_TICK
         #SNAP_NORMAL
 def register():
+    bpy.app.handlers.frame_change_pre.append(my_handler)
     bpy.types.Scene.lineGenActivate = BoolProperty(name="Active",description="activates line animation per frame", default=True)
     bpy.types.Scene.animDist = bpy.props.FloatProperty(name="Distance", description="Distance Threshold", default=5.0, min=0.001, max=1000)
     bpy.utils.register_module(__name__)
 def unregister():
+    bpy.app.handlers.frame_change_pre.remove(my_handler)
     del(bpy.types.Scene.animDist)
     del(bpy.types.Scene.lineGenActivate)
-    
-bpy.app.handlers.frame_change_pre.append(my_handler)
 if __name__ == "__main__":
     register()
