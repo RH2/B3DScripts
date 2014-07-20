@@ -9,6 +9,7 @@ from bpy.props import BoolProperty
 ###################################################
 
 print("RUNNING...")
+bpy.ops.object.select_all(action='DESELECT')
 if not 'dynaLines' in bpy.data.groups:
     bpy.ops.group.create(name="dynaLines") 
 
@@ -37,12 +38,15 @@ pointList=copy.copy(bpy.context.selected_objects)
 ###################################################
 
 def my_handler(scene): 
+    frame = scene.frame_current
     #print("Frame Change", scene.frame_current)
     #if bpy.context.scene['lineGenActivate'] == False:
         #indexA=1 
-    activationFlag = bpy.context.scene['lineGenActivate']
+    activationFlag = bpy.context.scene.lineGenActivate
+    ANIM_DIST=bpy.context.scene['animDist']
+    print(str(activationFlag) + " " +str(ANIM_DIST))
     if activationFlag == True:
-        ANIM_DIST=bpy.context.scene['animDist']
+        
         #go through each object in the group (set up index boundaries)
         xLength = len(pointList) #-1 
         indexA=0
@@ -72,11 +76,10 @@ def my_handler(scene):
         #scene = bpy.context.scene
         #scene.objects.link(Curve_OBJECT)
 
-    ############################
-    # TODO GENERATE CURVE OBJECT   
-    ############################
-
-
+        ############################
+        # TODO GENERATE CURVE OBJECT   
+        ############################
+        
 
 
 
@@ -103,13 +106,13 @@ class ToolsPanel(bpy.types.Panel):
         #FILE_TICK
         #SNAP_NORMAL
 def register():
-    bpy.app.handlers.frame_change_pre.append(my_handler)
     bpy.types.Scene.lineGenActivate = BoolProperty(name="Active",description="activates line animation per frame", default=True)
     bpy.types.Scene.animDist = bpy.props.FloatProperty(name="Distance", description="Distance Threshold", default=5.0, min=0.001, max=1000)
+    bpy.app.handlers.frame_change_pre.append(my_handler)
     bpy.utils.register_module(__name__)
 def unregister():
-    bpy.app.handlers.frame_change_pre.remove(my_handler)
     del(bpy.types.Scene.animDist)
     del(bpy.types.Scene.lineGenActivate)
+    bpy.app.handlers.frame_change_pre.remove(my_handler)
 if __name__ == "__main__":
     register()
