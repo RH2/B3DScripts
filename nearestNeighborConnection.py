@@ -23,12 +23,14 @@ for material in bpy.data.materials:
         lineMaterial=material
 
 ###################################################
-####################    SECTION 3    
+########### SECTION 3   SELECT POINTS TO OPERATE ON 
 ###################################################
 
 
 bpy.ops.object.select_all(action='DESELECT')
 bpy.ops.object.select_same_group(group="Points")
+bpy.ops.object.select_same_group(group="point")
+
 pointList= []
 pointList=copy.copy(bpy.context.selected_objects)
 
@@ -68,17 +70,28 @@ def my_handler(scene):
                     locY=pointList[indexY].location
                     distance = math.sqrt( (locX[0] - locY[0])**2 + (locX[1] - locY[1])**2 + (locX[2] - locY[2])**2)
                     if distance <= ANIM_DIST:
+                        print(locX)
+                        print(locY)
                         coordinate_Pairs.append(locX)
                         coordinate_Pairs.append(locY)
-
-        #create curve from inside coordinate_Pairs
-        #Curve_OBJECT = bpy.data.objects.new(name="MyObject", object_data=cu)
-        #scene = bpy.context.scene
-        #scene.objects.link(Curve_OBJECT)
 
         ############################
         # TODO GENERATE CURVE OBJECT   
         ############################
+        print(coordinate_Pairs)
+        #http://www.blender.org/documentation/blender_python_api_2_66_4/bpy.ops.curve.html
+        #bpy.data.objects['BezierCurve'].data.splines[0].bezier_points[0].co=0,0,0
+        coordinate_index= len(coordinate_Pairs)/2
+        for index_c in range(0,coordinate_index):
+            bpy.ops.curve.select_all(action='DESELECT')
+            bpy.ops.curve.vertex_add(location=(coordinate_Pairs[2*index_c]))
+            bpy.ops.curve.vertex_add(location=(coordinate_Pairs[2*index_c+1]))
+            bpy.ops.curve.make_segment()
+            bpy.ops.curve.handle_type_set(type='VECTOR')
+
+
+
+
         
 
 
