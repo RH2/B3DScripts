@@ -43,7 +43,7 @@ def my_handler(scene):
     #if bpy.context.scene['lineGenActivate'] == False:
         #indexA=1 
     activationFlag = bpy.context.scene.lineGenActivate
-    ANIM_DIST=bpy.context.scene['animDist']
+    ANIM_DIST=bpy.context.scene.animDist
     print(str(activationFlag) + " " +str(ANIM_DIST))
     if activationFlag == True:
         
