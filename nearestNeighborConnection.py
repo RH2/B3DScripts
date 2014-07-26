@@ -3,6 +3,7 @@ import math
 import mathutils
 import copy
 from bpy.props import BoolProperty
+from bpy_extras.io_utils import unpack_list
 
 ###################################################
 ####################    SECTION 1      BEGIN SCRIPT
@@ -28,11 +29,23 @@ for material in bpy.data.materials:
 
 
 bpy.ops.object.select_all(action='DESELECT')
+bpy.ops.object.select_same_group(group="Point")
 bpy.ops.object.select_same_group(group="Points")
 bpy.ops.object.select_same_group(group="point")
+bpy.ops.object.select_same_group(group="points")
 
 pointList= []
 pointList=copy.copy(bpy.context.selected_objects)
+
+
+curvedata = bpy.data.curves.new(name="Curve", type='CURVE')
+obj = bpy.data.objects.new("CurveObj", curvedata)
+bpy.context.scene.objects.link(obj)
+obj.data.resolution_u     = 1
+obj.data.bevel_depth      = 0.1
+obj.data.bevel_resolution = 1
+obj.data.dimensions = '3D'
+obj.data.fill_mode = 'FULL'
 
 
 ###################################################
@@ -41,9 +54,6 @@ pointList=copy.copy(bpy.context.selected_objects)
 
 def my_handler(scene): 
     frame = scene.frame_current
-    #print("Frame Change", scene.frame_current)
-    #if bpy.context.scene['lineGenActivate'] == False:
-        #indexA=1 
     activationFlag = bpy.context.scene.lineGenActivate
     ANIM_DIST=bpy.context.scene.animDist
     print(str(activationFlag) + " " +str(ANIM_DIST))
@@ -53,14 +63,7 @@ def my_handler(scene):
         xLength = len(pointList) #-1 
         indexA=0
         bpy.ops.object.select_all(action='DESELECT')
-
-
-        ############################
-        #       ARRAY TO HOLD POINTS    
-        ############################
-        coordinate_Pairs = []
-
-
+        curvedata.splines.clear()
         for x in pointList:
             indexA= indexA+1
             if indexA <= xLength:
@@ -70,56 +73,21 @@ def my_handler(scene):
                     locY=pointList[indexY].location
                     distance = math.sqrt( (locX[0] - locY[0])**2 + (locX[1] - locY[1])**2 + (locX[2] - locY[2])**2)
                     if distance <= ANIM_DIST:
+                        minimumRadius = 0.1
+                        radius_multiplier = 1
+                        pointRadius = (1 - (distance / ANIM_DIST))*radius_multiplier + minimumRadius
+                        coordinate_Pairs = []
                         print(locX)
                         print(locY)
                         coordinate_Pairs.append(locX)
                         coordinate_Pairs.append(locY)
 
-        ############################
-        # TODO GENERATE CURVE OBJECT   
-        ############################
-        print(coordinate_Pairs)
-        #http://www.blender.org/documentation/blender_python_api_2_66_4/bpy.ops.curve.html
-        #bpy.data.objects['BezierCurve'].data.splines[0].bezier_points[0].co=0,0,0
-        #curveObject = bpy.ops.curve.primitive_bezier_curve_add(radius=1.0, enter_editmode=True, location=(0.0, 0.0, 0.0), rotation=(0.0, 0.0, 0.0),)
-        #coordinate_index= len(coordinate_Pairs)/2
-        #for index_c in range(0,int(coordinate_index)):
-        #    bpy.ops.curve.select_all(action='DESELECT')
-        #    bpy.ops.curve.vertex_add(location=(coordinate_Pairs[2*index_c]))
-        #    bpy.ops.curve.vertex_add(location=(coordinate_Pairs[2*index_c+1]))
-        #    bpy.ops.curve.make_segment()
-        #    bpy.ops.curve.handle_type_set(type='VECTOR')
-        cu = bpy.data.curves.new(name="MyCurve", type='CURVE')
-
-        # setup curve
-        cu.fill_mode = 'NONE'
-        cu.extrude = 0.02
-        cu.bevel_depth = 0.02
-        cu.dimensions = '3D'
-
-        # link to scene
-        ob = bpy.data.objects.new(name="MyObject", object_data=cu)
-        scene = bpy.context.scene
-        scene.objects.link(ob)
-
-        # fill curve with data
-        spline = cu.splines.new(type='POLY')
-        # -1 because we already have a point
-        spline.points.add(len(coordinate_Pairs))
-        print((len(coordinate_Pairs)/2 - 1))
-        print(len(spline.points))
-        for i, point in enumerate(spline.points):
-            point.co[0] = coordinate_Pairs[i][0] 
-            point.co[1] = coordinate_Pairs[i][1] 
-            point.co[2] = coordinate_Pairs[i][2]        
-
-
-
-        
-
-
-
-
+                        spline = curvedata.splines.new('BEZIER')
+                        spline.bezier_points.add(1)
+                        spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
+                        #spline.bezier_points.foreach_set("radius"-1, pointRadius)
+                        for i in range(0,1):
+                            spline.bezier_points[i].radius = pointRadius
 
 ###################################################
 ####################    SECTION 5   UI/REGISTRATION
