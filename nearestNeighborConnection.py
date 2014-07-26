@@ -81,14 +81,37 @@ def my_handler(scene):
         print(coordinate_Pairs)
         #http://www.blender.org/documentation/blender_python_api_2_66_4/bpy.ops.curve.html
         #bpy.data.objects['BezierCurve'].data.splines[0].bezier_points[0].co=0,0,0
-        coordinate_index= len(coordinate_Pairs)/2
-        for index_c in range(0,coordinate_index):
-            bpy.ops.curve.select_all(action='DESELECT')
-            bpy.ops.curve.vertex_add(location=(coordinate_Pairs[2*index_c]))
-            bpy.ops.curve.vertex_add(location=(coordinate_Pairs[2*index_c+1]))
-            bpy.ops.curve.make_segment()
-            bpy.ops.curve.handle_type_set(type='VECTOR')
+        #curveObject = bpy.ops.curve.primitive_bezier_curve_add(radius=1.0, enter_editmode=True, location=(0.0, 0.0, 0.0), rotation=(0.0, 0.0, 0.0),)
+        #coordinate_index= len(coordinate_Pairs)/2
+        #for index_c in range(0,int(coordinate_index)):
+        #    bpy.ops.curve.select_all(action='DESELECT')
+        #    bpy.ops.curve.vertex_add(location=(coordinate_Pairs[2*index_c]))
+        #    bpy.ops.curve.vertex_add(location=(coordinate_Pairs[2*index_c+1]))
+        #    bpy.ops.curve.make_segment()
+        #    bpy.ops.curve.handle_type_set(type='VECTOR')
+        cu = bpy.data.curves.new(name="MyCurve", type='CURVE')
 
+        # setup curve
+        cu.fill_mode = 'NONE'
+        cu.extrude = 0.02
+        cu.bevel_depth = 0.02
+        cu.dimensions = '3D'
+
+        # link to scene
+        ob = bpy.data.objects.new(name="MyObject", object_data=cu)
+        scene = bpy.context.scene
+        scene.objects.link(ob)
+
+        # fill curve with data
+        spline = cu.splines.new(type='POLY')
+        # -1 because we already have a point
+        spline.points.add(len(coordinate_Pairs))
+        print((len(coordinate_Pairs)/2 - 1))
+        print(len(spline.points))
+        for i, point in enumerate(spline.points):
+            point.co[0] = coordinate_Pairs[i][0] 
+            point.co[1] = coordinate_Pairs[i][1] 
+            point.co[2] = coordinate_Pairs[i][2]        
 
 
 
