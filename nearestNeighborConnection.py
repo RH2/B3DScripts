@@ -58,6 +58,14 @@ def my_handler(scene):
     activationFlag = bpy.context.scene.lineGenActivate
     randomConnections = bpy.context.scene.randomConnections
     handle_random_mul = bpy.context.scene.randomizeInfluence
+    coordinate_noise = bpy.context.scene.coordinate_noise
+    coordinate_noise_influence = bpy.context.scene.coordinate_noise_influence
+    coordinate_noise_scale = bpy.context.scene.coordinate_noise_scale
+    coordinate_offset_dx = bpy.context.scene.coordinate_offset_dx
+    coordinate_offset_dy = bpy.context.scene.coordinate_offset_dy
+    coordinate_offset_dz = bpy.context.scene.coordinate_offset_dz
+    pointLerp = bpy.context.scene.pointLerp
+    pointIdentity = bpy.context.scene.pointIdentity 
     randomNum=[]
     ANIM_DIST=bpy.context.scene.animDist
     print(str(activationFlag) + " " +str(ANIM_DIST))
@@ -77,29 +85,24 @@ def my_handler(scene):
                     locY=pointList[indexY].location
                     distance = math.sqrt( (locX[0] - locY[0])**2 + (locX[1] - locY[1])**2 + (locX[2] - locY[2])**2)
                     if (randomConnections):
-                            randomNum = random.random()*100
-                            if randomNum <= bpy.context.scene.randomConnections_threshold:
-                                if distance >= ANIM_DIST:
-                                    distance = ANIM_DIST*0.9
-                            if randomNum >= bpy.context.scene.randomConnections_threshold:
-                                distance = ANIM_DIST*3
-                    else:
-                        distance = ANIM_DIST*2
+                        randomNum = random.random()*100
+                        if randomNum <= bpy.context.scene.randomConnections_threshold:
+                            if distance >= ANIM_DIST:
+                                distance = ANIM_DIST*0.9
+                        if randomNum >= bpy.context.scene.randomConnections_threshold:
+                            distance = ANIM_DIST*3
                     if distance <= ANIM_DIST:
                         minimumRadius = bpy.context.scene.radius_minimum
                         radius_multiplier = bpy.context.scene.radius_multiplier
                         pointRadius = (1 - (distance / ANIM_DIST))*radius_multiplier + minimumRadius
                         coordinate_Pairs = []
-                        print(locX)
-                        print(locY)
                         coordinate_Pairs.append(locX)
                         coordinate_Pairs.append(locY)
 
                         spline = curvedata.splines.new('BEZIER')
                         spline.bezier_points.add(1)
                         spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
-                        #spline.bezier_points.foreach_set("radius"-1, pointRadius)
-                        for i in range(0,1):
+                        for i in range(0,2):
                             left_dx = bpy.context.scene.left_dx
                             left_dy = bpy.context.scene.left_dy
                             left_dz = bpy.context.scene.left_dz
@@ -107,20 +110,45 @@ def my_handler(scene):
                             right_dx = bpy.context.scene.right_dx
                             right_dy = bpy.context.scene.right_dy
                             right_dz = bpy.context.scene.right_dz
-                            spline.bezier_points[i].handle_left[0]  = coordinate_Pairs[i][0]+left_dx
-                            spline.bezier_points[i].handle_left[1]  = coordinate_Pairs[i][1]+left_dy
-                            spline.bezier_points[i].handle_left[2]  = coordinate_Pairs[i][2]+left_dz
 
-                            spline.bezier_points[i].handle_right[0] = coordinate_Pairs[i][0]+right_dx
-                            spline.bezier_points[i].handle_right[1] = coordinate_Pairs[i][1]+right_dy
-                            spline.bezier_points[i].handle_right[2] = coordinate_Pairs[i][2]+right_dz
+
+                            spline.bezier_points[i].handle_left[0]  += coordinate_Pairs[i][0]+left_dx
+                            spline.bezier_points[i].handle_left[1]  += coordinate_Pairs[i][1]+left_dy
+                            spline.bezier_points[i].handle_left[2]  += coordinate_Pairs[i][2]+left_dz
+
+                            spline.bezier_points[i].handle_right[0] += coordinate_Pairs[i][0]+right_dx
+                            spline.bezier_points[i].handle_right[1] += coordinate_Pairs[i][1]+right_dy
+                            spline.bezier_points[i].handle_right[2] += coordinate_Pairs[i][2]+right_dz
+                            if(pointIdentity):
+                                #spline.bezier_points[i].handle_right.xyz  = spline.bezier_points[i].co
+                                #v=mathutils.Vector((0.01,0.01,0.01))
+                                #spline.bezier_points[i].handle_left.xyz = spline.bezier_points[i].co+v
+                                #spline.bezier_points[i].handle_right_type='FREE'
+                                #spline.bezier_points[i].handle_left_type='FREE'
+
+                                #spline.bezier_points[i].handle_right_type='ALIGNED'
+                                #spline.bezier_points[i].handle_left_type='ALIGNED'
+                                #spline.bezier_points[i].handle_right_type='VECTOR'
+                                #spline.bezier_points[i].handle_left_type='VECTOR'
+                                spline.bezier_points[i].handle_left.xyz  += spline.bezier_points[i].handle_left.lerp(spline.bezier_points[i].co,pointLerp)
+                                spline.bezier_points[i].handle_right.xyz += spline.bezier_points[i].handle_right.lerp(spline.bezier_points[i].co,pointLerp)
+
+
+
                             if(bpy.context.scene.randomHandles):
                                 spline.bezier_points[i].handle_left[0]  +=(0.5-random.random())*handle_random_mul 
                                 spline.bezier_points[i].handle_left[1]  +=(0.5-random.random())*handle_random_mul 
                                 spline.bezier_points[i].handle_left[2]  +=(0.5-random.random())*handle_random_mul 
                                 spline.bezier_points[i].handle_right[0] +=(0.5-random.random())*handle_random_mul 
                                 spline.bezier_points[i].handle_right[1] +=(0.5-random.random())*handle_random_mul 
-                                spline.bezier_points[i].handle_right[2] +=(0.5-random.random())*handle_random_mul 
+                                spline.bezier_points[i].handle_right[2] +=(0.5-random.random())*handle_random_mul
+                            if(coordinate_noise):
+                                spline.bezier_points[i].handle_left[0]  +=math.sin(spline.bezier_points[i].handle_left[0]*coordinate_noise_scale+coordinate_offset_dx)*coordinate_noise_influence
+                                spline.bezier_points[i].handle_left[1]  +=math.cos(spline.bezier_points[i].handle_left[1]*coordinate_noise_scale+coordinate_offset_dy)*coordinate_noise_influence
+                                spline.bezier_points[i].handle_left[2]  +=math.sin(spline.bezier_points[i].handle_left[2]*coordinate_noise_scale+coordinate_offset_dz)*coordinate_noise_influence
+                                spline.bezier_points[i].handle_right[0] +=math.sin(spline.bezier_points[i].handle_left[0]*coordinate_noise_scale+coordinate_offset_dx)*coordinate_noise_influence
+                                spline.bezier_points[i].handle_right[1] +=math.cos(spline.bezier_points[i].handle_left[1]*coordinate_noise_scale+coordinate_offset_dy)*coordinate_noise_influence
+                                spline.bezier_points[i].handle_right[2] +=math.sin(spline.bezier_points[i].handle_left[2]*coordinate_noise_scale+coordinate_offset_dz)*coordinate_noise_influence
                             spline.bezier_points[i].radius = pointRadius
 
 ###################################################
@@ -164,17 +192,40 @@ class ToolsPanel(bpy.types.Panel):
         row= layout.row()
         row.prop(context.scene, "angleMod")
         row.prop(context.scene, "angleInfluence")
+        row= layout.row()
+        row.prop(context.scene, "coordinate_noise")
+        row.prop(context.scene, "coordinate_noise_influence")
+        row= layout.row()
+        row.prop(context.scene, "coordinate_noise_scale")
+        row= layout.row()
+        row.prop(context.scene, "coordinate_offset_dx")
+        row.prop(context.scene, "coordinate_offset_dy")
+        row.prop(context.scene, "coordinate_offset_dz")
+        row= layout.row()
+        row.prop(context.scene, "pointIdentity")
+        row.prop(context.scene, "pointLerp")
+
+
 
 
         #FILE_TICK
         #SNAP_NORMAL
 def register():
+    bpy.types.Scene.pointIdentity = BoolProperty(name="coordinates = handles",description="places handle coords at point coordinate", default=False)
+    bpy.types.Scene.pointLerp = bpy.props.FloatProperty(name="lerp value", description="moves handles", default=0.5, min=-10, max=10)
     bpy.types.Scene.randomConnections = BoolProperty(name="Randomize Connections",description="ignores distance threshold", default=False)
     bpy.types.Scene.randomConnections_threshold =  bpy.props.FloatProperty(name="random %", description="chance of random connection", default=50, min=0, max=100)
     bpy.types.Scene.randomHandles = BoolProperty(name="Randomize Handles",description="adds random offsets to connector handles", default=False)
     bpy.types.Scene.randomizeInfluence = bpy.props.FloatProperty(name="Random Influence", description="left handle X axis offset", default=1, min=0, max=100)
     bpy.types.Scene.angleMod = BoolProperty(name="Handle Angle Mod",description="takes connector angles into account", default=False)
-    bpy.types.Scene.angleInfluence = bpy.props.FloatProperty(name="left dX", description="left handle X axis offset", default=1, min=0, max=100)
+    bpy.types.Scene.angleInfluence = bpy.props.FloatProperty(name="mod influence", description="multiplies angle modification influence", default=1, min=0, max=100)
+
+    bpy.types.Scene.coordinate_noise = BoolProperty(name="Coordinate Noise",description="adds trigometric offsets to handles", default=False)
+    bpy.types.Scene.coordinate_noise_influence = bpy.props.FloatProperty(name="Noise Influence", description="scales coordinate scale", default=1, min=0, max=100)
+    bpy.types.Scene.coordinate_noise_scale = bpy.props.FloatProperty(name="Noise coord scale", description="noise frequency", default=1, min=0, max=100)
+    bpy.types.Scene.coordinate_offset_dx = bpy.props.FloatProperty(name="noise dX", description="world noise offset x", default=0, min=-1000, max=1000)
+    bpy.types.Scene.coordinate_offset_dy = bpy.props.FloatProperty(name="noise dY", description="world noise offset y", default=0, min=-1000, max=1000)
+    bpy.types.Scene.coordinate_offset_dz = bpy.props.FloatProperty(name="noise dZ", description="world noise offset z", default=0, min=-1000, max=1000)
 
 
     bpy.types.Scene.lineGenActivate = BoolProperty(name="Active",description="activates line animation per frame", default=True)
@@ -193,12 +244,21 @@ def register():
     bpy.app.handlers.frame_change_pre.append(my_handler)
     bpy.utils.register_module(__name__)
 def unregister():
+    del(bpy.types.Scene.pointIdentity)
+    del(bpy.types.Scene.pointLerp)
     del(bpy.types.Scene.randomConnections)
     del(bpy.types.Scene.randomConnections_threshold)
     del(bpy.types.Scene.randomHandles)
     del(bpy.types.Scene.randomizeInfluence)
     del(bpy.types.Scene.angleMod)
     del(bpy.types.Scene.angleInfluence)
+
+    del(bpy.types.Scene.coordinate_noise)
+    del(bpy.types.Scene.coordinate_noise_influence)
+    del(bpy.types.Scene.coordinate_noise_scale)
+    del(bpy.types.Scene.coordinate_offset_dx)
+    del(bpy.types.Scene.coordinate_offset_dy)
+    del(bpy.types.Scene.coordinate_offset_dz)
 
     del(bpy.types.Scene.animDist)
     del(bpy.types.Scene.lineGenActivate)
