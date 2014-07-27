@@ -52,8 +52,16 @@ obj.data.fill_mode = 'FULL'
 ###################################################
 ####################    SECTION 4     FRAME HANDLER    
 ###################################################
-
+def returnObjectByName (passedName= ""):
+    r = None
+    obs = bpy.data.objects
+    for ob in obs:
+        if ob.name == passedName:
+            r = ob
+    return r
 def my_handler(scene): 
+    selected_objects = copy.copy(bpy.context.selected_objects)
+
     frame = scene.frame_current
     activationFlag = bpy.context.scene.lineGenActivate
     randomConnections = bpy.context.scene.randomConnections
@@ -64,6 +72,7 @@ def my_handler(scene):
     coordinate_offset_dx = bpy.context.scene.coordinate_offset_dx
     coordinate_offset_dy = bpy.context.scene.coordinate_offset_dy
     coordinate_offset_dz = bpy.context.scene.coordinate_offset_dz
+    curveOutward= bpy.context.scene.curveOutward
     pointLerp = bpy.context.scene.pointLerp
     pointIdentity = bpy.context.scene.pointIdentity 
     randomNum=[]
@@ -102,7 +111,10 @@ def my_handler(scene):
                         spline = curvedata.splines.new('BEZIER')
                         spline.bezier_points.add(1)
                         spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
-                        for i in range(0,2):
+                        maxindex=2
+                        if (pointIdentity):
+                            maxindex=1
+                        for i in range(0,maxindex):
                             left_dx = bpy.context.scene.left_dx
                             left_dy = bpy.context.scene.left_dy
                             left_dz = bpy.context.scene.left_dz
@@ -119,7 +131,7 @@ def my_handler(scene):
                             spline.bezier_points[i].handle_right[0] += coordinate_Pairs[i][0]+right_dx
                             spline.bezier_points[i].handle_right[1] += coordinate_Pairs[i][1]+right_dy
                             spline.bezier_points[i].handle_right[2] += coordinate_Pairs[i][2]+right_dz
-                            if(pointIdentity):
+                            if(curveOutward):
                                 #spline.bezier_points[i].handle_right.xyz  = spline.bezier_points[i].co
                                 #v=mathutils.Vector((0.01,0.01,0.01))
                                 #spline.bezier_points[i].handle_left.xyz = spline.bezier_points[i].co+v
@@ -130,6 +142,7 @@ def my_handler(scene):
                                 #spline.bezier_points[i].handle_left_type='ALIGNED'
                                 #spline.bezier_points[i].handle_right_type='VECTOR'
                                 #spline.bezier_points[i].handle_left_type='VECTOR'
+
                                 spline.bezier_points[i].handle_left.xyz  += spline.bezier_points[i].handle_left.lerp(spline.bezier_points[i].co,pointLerp)
                                 spline.bezier_points[i].handle_right.xyz += spline.bezier_points[i].handle_right.lerp(spline.bezier_points[i].co,pointLerp)
 
@@ -150,6 +163,10 @@ def my_handler(scene):
                                 spline.bezier_points[i].handle_right[1] +=math.cos(spline.bezier_points[i].handle_left[1]*coordinate_noise_scale+coordinate_offset_dy)*coordinate_noise_influence
                                 spline.bezier_points[i].handle_right[2] +=math.sin(spline.bezier_points[i].handle_left[2]*coordinate_noise_scale+coordinate_offset_dz)*coordinate_noise_influence
                             spline.bezier_points[i].radius = pointRadius
+        bpy.ops.object.select_all(action='DESELECT')
+        for ob in selected_objects:
+                print(ob.name)
+                ob.select = True
 
 ###################################################
 ####################    SECTION 5   UI/REGISTRATION
@@ -203,6 +220,7 @@ class ToolsPanel(bpy.types.Panel):
         row.prop(context.scene, "coordinate_offset_dz")
         row= layout.row()
         row.prop(context.scene, "pointIdentity")
+        row.prop(context.scene, "curveOutward")
         row.prop(context.scene, "pointLerp")
 
 
@@ -211,7 +229,8 @@ class ToolsPanel(bpy.types.Panel):
         #FILE_TICK
         #SNAP_NORMAL
 def register():
-    bpy.types.Scene.pointIdentity = BoolProperty(name="coordinates = handles",description="places handle coords at point coordinate", default=False)
+    bpy.types.Scene.pointIdentity = BoolProperty(name="inward",description="places handle coords at point coordinate", default=False)
+    bpy.types.Scene.curveOutward = BoolProperty(name="outward",description="forces curve outward away from 0,0,0", default=False)
     bpy.types.Scene.pointLerp = bpy.props.FloatProperty(name="lerp value", description="moves handles", default=0.5, min=-10, max=10)
     bpy.types.Scene.randomConnections = BoolProperty(name="Randomize Connections",description="ignores distance threshold", default=False)
     bpy.types.Scene.randomConnections_threshold =  bpy.props.FloatProperty(name="random %", description="chance of random connection", default=50, min=0, max=100)
@@ -245,6 +264,7 @@ def register():
     bpy.utils.register_module(__name__)
 def unregister():
     del(bpy.types.Scene.pointIdentity)
+    del(bpy.types.Scene.curveOutward)
     del(bpy.types.Scene.pointLerp)
     del(bpy.types.Scene.randomConnections)
     del(bpy.types.Scene.randomConnections_threshold)
