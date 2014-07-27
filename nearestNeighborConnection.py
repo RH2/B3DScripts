@@ -52,15 +52,7 @@ obj.data.fill_mode = 'FULL'
 ###################################################
 ####################    SECTION 4     FRAME HANDLER    
 ###################################################
-def returnObjectByName (passedName= ""):
-    r = None
-    obs = bpy.data.objects
-    for ob in obs:
-        if ob.name == passedName:
-            r = ob
-    return r
 def my_handler(scene): 
-    selected_objects = copy.copy(bpy.context.selected_objects)
 
     frame = scene.frame_current
     activationFlag = bpy.context.scene.lineGenActivate
@@ -163,11 +155,6 @@ def my_handler(scene):
                                 spline.bezier_points[i].handle_right[1] +=math.cos(spline.bezier_points[i].handle_left[1]*coordinate_noise_scale+coordinate_offset_dy)*coordinate_noise_influence
                                 spline.bezier_points[i].handle_right[2] +=math.sin(spline.bezier_points[i].handle_left[2]*coordinate_noise_scale+coordinate_offset_dz)*coordinate_noise_influence
                             spline.bezier_points[i].radius = pointRadius
-        bpy.ops.object.select_all(action='DESELECT')
-        for ob in selected_objects:
-                print(ob.name)
-                ob.select = True
-
 ###################################################
 ####################    SECTION 5   UI/REGISTRATION
 ###################################################
