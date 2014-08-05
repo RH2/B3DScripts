@@ -7,12 +7,12 @@ from bpy.props import BoolProperty
 from bpy_extras.io_utils import unpack_list
 
 def angle_to_rad(x):
-	return x * (Math.PI / 180);
+	return x * (math.pi / 180);
 def rotate_point(point, center, angle):
 	angleInRadians = angle_to_rad(angle)
-	cosTheta = Math.cos(angleInRadians)
-	sinTheta = Math.sin(angleInRadians)
-	pointC = mathutils.Vector((cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x , sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x)))
+	cosTheta = math.cos(angleInRadians)
+	sinTheta = math.sin(angleInRadians)
+	pointC = mathutils.Vector((cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x , sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x))
 	return pointC
 
 origin = mathutils.Vector((0,0,0))
@@ -41,26 +41,50 @@ obj.data.fill_mode = 'FULL'
 
 
 #starting point
-gen_array_data.append(0)
 current_gen = 0
 pointA=mathutils.Vector((0,0,0))
 
 
 #generation 0 no split just add offset and create line.
-spline = curvedata.splines.new('BEZIER')
+spline = fractalCurveData.splines.new('BEZIER')
 spline.bezier_points.add(1)
 #spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
 spline.bezier_points[0].co=mathutils.Vector((0,0,0))
 spline.bezier_points[1].co=mathutils.Vector((seg_length,0,0))
+gen_array_data=[[tuple([mathutils.Vector((seg_length,0,0)),mathutils.Vector((0,0,0))])]]
 
 
-for(i in gen_max):
-	current_gen++
-	gen_array_data.append(current_gen)
-	for x in gen_array_data[current_gen - 1]: #for all points in previous generation
-		locationB = gen_array_data[current_gen][x][0]
-		rotationB = gen_array_data[current_gen][x][1]
+for i in range(int(gen_max)):
+	lastGenerationPoints = gen_array_data[i-1]
+	#create two new points for each old point
+	for a in lastGenerationPoints:				#a = gen_array_data[i-1][a](loc,rot)
+		center = a[0] 
+		for split in range(int(splits)):
+			newPoint = rotate_point(mathutils.Vector((center[0][0]+seg_length,center[0][1],center[0][2])), center, split*(90/splits)) #location
+			#create edges
+			spline = fractalCurveData.splines.new('BEZIER')
+			spline.bezier_points.add(1)
+			spline.bezier_points[0].co=center[0]
+			spline.bezier_points[1].co=newPoint
+			gen_array_data=[[tuple([mathutils.Vector((seg_length,0,0)),mathutils.Vector((0,0,0))])]]
 
+			#append point to gen_array_data
+			gen_array_data[i].append(mathutils.Vector((newPoint)),mathutils.Vector((0,0,split*(90/splits)+center[1])))
+
+
+	
+
+
+
+	
+
+
+	#add offset to point and create point a =(x+length,y,z)
+	#rotate point a around point b
+	#create segment
+	#do this for branch x and y
+	#store points in generation
+	#create points from generation set n-1(a) and n(children)
 
 
 
@@ -75,11 +99,6 @@ class ToolsPanel(bpy.types.Panel):
         layout = self.layout
         row= layout.row()
         row.prop(context.scene, "lineGenActivate")
-
-
-
-
-
 def register():
     bpy.types.Scene.curveOutward = BoolProperty(name="outward",description="forces curve outward away from 0,0,0", default=False)
     bpy.types.Scene.segLength = bpy.props.FloatProperty(name="segment length", description="changes the base length of fractal edges", default=1, min=-10, max=10)
@@ -93,43 +112,21 @@ def register():
     bpy.utils.register_module(__name__)
 def unregister():
 	del(bpy.types.Scene.curveOutward)
-    del(bpy.types.Scene.segLength)
-    del(bpy.types.Scene.segSplits)
-    del(bpy.types.Scene.segSplitAngle)
-    del(bpy.types.Scene.genMax)
-    del(bpy.types.Scene.genSize)
-    del(bpy.types.Scene.genThick)
-    del(bpy.types.Scene.genThickMod)
-    del(bpy.types.Scene.curveOutward)
-    del(bpy.types.Scene.pointLerp)
+	del(bpy.types.Scene.segLength)
+	del(bpy.types.Scene.segSplits)
+	del(bpy.types.Scene.segSplitAngle)
+	del(bpy.types.Scene.genMax)
+	del(bpy.types.Scene.genSize)
+	del(bpy.types.Scene.genThick)
+	del(bpy.types.Scene.genThickMod)
+	del(bpy.types.Scene.curveOutward)
+	del(bpy.types.Scene.pointLerp)
 
 if __name__ == "__main__":
     register()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-#add offset to point and create point a =(x+length,y,z)
-#rotate point a around point b
-#create segment
-#do this for branch x and y
-#store points in generation
-#create points from generation set n-1(a) and n(children)
 
 
 
