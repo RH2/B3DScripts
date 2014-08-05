@@ -54,13 +54,14 @@ spline.bezier_points[1].co=mathutils.Vector((seg_length,0,0))
 gen_array_data=[[tuple([mathutils.Vector((seg_length,0,0)),mathutils.Vector((0,0,0))])]]
 
 
-for i in range(int(gen_max)):
+for i in range(1,int(gen_max+1)):
 	lastGenerationPoints = gen_array_data[i-1]
 	#create two new points for each old point
 	for a in lastGenerationPoints:				#a = gen_array_data[i-1][a](loc,rot)
-		center = a[0] 
+		center = copy.copy(a[0]) 
 		for split in range(int(splits)):
-			newPoint = rotate_point(mathutils.Vector((center[0][0]+seg_length,center[0][1],center[0][2])), center, split*(90/splits)) #location
+			newLocation = mathutils.Vector((center[0][0]+seg_length,center[0][1],center[0][2]))
+			newPoint = rotate_point(newLocation, center, split*(90/splits))
 			#create edges
 			spline = fractalCurveData.splines.new('BEZIER')
 			spline.bezier_points.add(1)
