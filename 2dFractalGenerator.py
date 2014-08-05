@@ -12,36 +12,20 @@ def rotate_point(point, center, angle):
 	angleInRadians = angle_to_rad(angle)
 	cosTheta = Math.cos(angleInRadians)
 	sinTheta = Math.sin(angleInRadians)
-	pointC = Vector((cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x , sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x)))
+	pointC = mathutils.Vector((cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x , sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x)))
 	return pointC
 
-#define origin 
-origin = Vector((0,0,0))
-#define number of generations
-gen_max= 4
-#define number of splits
-splits = 2
-#define angle split (modulation) (if not zero, set offset )
-split_angle = 0
-#define segment length
+origin = mathutils.Vector((0,0,0))
 seg_length = 2
-#define generation shrinkage
+splits = 2
+split_angle = 0
+gen_max= 4
 gen_size = 0.8
-#define generation default & thickness mod
 gen_thick = 12
 gen_thick_mod = 0.8
 
-#generations
-array_generations = []
-#generation array index returns list of points
-array_generation_points = []
-#each point has location and rotation
-array_generation_data = []
-
-#for i in array_generations[x].array.generation.points[]:
-#	location = array_generations[x].array.generation.points[i].array_generation_data[0]
-#	roation = array_generations[x].array.generation.points[i].array_generation_data[1]
-
+#[generation number][point][0=location,1=rotation]
+gen_array_data = []
 
 ################################
 ###   CREATE CURVE OBJECT    ###
@@ -57,23 +41,86 @@ obj.data.fill_mode = 'FULL'
 
 
 #starting point
+gen_array_data.append(0)
 current_gen = 0
-pointA=Vector((0,0,0))
+pointA=mathutils.Vector((0,0,0))
 
 
 #generation 0 no split just add offset and create line.
 spline = curvedata.splines.new('BEZIER')
 spline.bezier_points.add(1)
-spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
-spline.bezier_points[0]=Vector((0,0,0))
-spline.bezier_points[1]=Vector((seg_length,0,0))
+#spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
+spline.bezier_points[0].co=mathutils.Vector((0,0,0))
+spline.bezier_points[1].co=mathutils.Vector((seg_length,0,0))
 
-#generation n
+
 for(i in gen_max):
-	current_gen_size = i * gen_size
-	point_population += i ** 2
+	current_gen++
+	gen_array_data.append(current_gen)
+	for x in gen_array_data[current_gen - 1]: #for all points in previous generation
+		locationB = gen_array_data[current_gen][x][0]
+		rotationB = gen_array_data[current_gen][x][1]
 
-	
+
+
+
+
+class ToolsPanel(bpy.types.Panel):
+    bl_label = "Animatable Threshold Line Generator"
+    bl_space_type = "PROPERTIES"
+    bl_region_type = "WINDOW"
+    bl_context = "scene"
+    
+    def draw(self, context):
+        layout = self.layout
+        row= layout.row()
+        row.prop(context.scene, "lineGenActivate")
+
+
+
+
+
+def register():
+    bpy.types.Scene.curveOutward = BoolProperty(name="outward",description="forces curve outward away from 0,0,0", default=False)
+    bpy.types.Scene.segLength = bpy.props.FloatProperty(name="segment length", description="changes the base length of fractal edges", default=1, min=-10, max=10)
+    bpy.types.Scene.segSplits = bpy.props.FloatProperty(name="generation splits", description="changes the number of splits", default=1, min=-10, max=10)
+    bpy.types.Scene.segSplitAngle = bpy.props.FloatProperty(name="angle modulation", description="angle modulation of splits", default=0, min=0, max=180)
+    bpy.types.Scene.genMax = bpy.props.FloatProperty(name="number of generations", description="WARNING: KEEP LOW (change script if you want something beyond 10)", default=4, min=0, max=10)
+    bpy.types.Scene.genSize = bpy.props.FloatProperty(name="generation length modulation", description="generation * length", default=0.95, min=-10, max=10)
+    bpy.types.Scene.genThick = bpy.props.FloatProperty(name="base generation weight", description="base thickness", default=0.95, min=-10, max=10)
+    bpy.types.Scene.genThickMod = bpy.props.FloatProperty(name="generation weight modulation", description="generation * base thickness", default=1, min=-5, max=5)
+
+    bpy.utils.register_module(__name__)
+def unregister():
+	del(bpy.types.Scene.curveOutward)
+    del(bpy.types.Scene.segLength)
+    del(bpy.types.Scene.segSplits)
+    del(bpy.types.Scene.segSplitAngle)
+    del(bpy.types.Scene.genMax)
+    del(bpy.types.Scene.genSize)
+    del(bpy.types.Scene.genThick)
+    del(bpy.types.Scene.genThickMod)
+    del(bpy.types.Scene.curveOutward)
+    del(bpy.types.Scene.pointLerp)
+
+if __name__ == "__main__":
+    register()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
