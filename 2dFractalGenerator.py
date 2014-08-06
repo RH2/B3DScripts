@@ -60,7 +60,7 @@ for i in range(1,int(gen_max+1)):
 	for a in lastGenerationPoints:				#a = gen_array_data[i-1][a](loc,rot)
 		center = copy.copy(a[0]) 
 		for split in range(int(splits)):
-			newLocation = mathutils.Vector((center[0][0]+seg_length,center[0][1],center[0][2]))
+			newLocation = center+mathutils.Vector((seg_length,0,0))
 			newPoint = rotate_point(newLocation, center, split*(90/splits))
 			#create edges
 			spline = fractalCurveData.splines.new('BEZIER')
