@@ -6,92 +6,78 @@ import copy
 from bpy.props import BoolProperty
 from bpy_extras.io_utils import unpack_list
 
+print("initialize")
+
 def angle_to_rad(x):
 	return x * (math.pi / 180);
 def rotate_point(point, center, angle):
 	angleInRadians = angle_to_rad(angle)
 	cosTheta = math.cos(angleInRadians)
 	sinTheta = math.sin(angleInRadians)
-	pointC = mathutils.Vector((cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x , sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x))
+	pointC = mathutils.Vector((cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x , sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x,0))
 	return pointC
+def main(context):
+	origin = mathutils.Vector((0,0,0))
+	seg_length = 2
+	splits = 2
+	split_angle = 0
+	#gen_max = bpy.context.scene.genMax
+	gen_max = bpy.context.scene['genMax']
+	gen_size = 0.8
+	gen_thick = 12
+	gen_thick_mod = 0.8
 
-origin = mathutils.Vector((0,0,0))
-seg_length = 2
-splits = 2
-split_angle = 0
-gen_max= 4
-gen_size = 0.8
-gen_thick = 12
-gen_thick_mod = 0.8
+	#[generation number][point][0=location,1=rotation]
+	gen_array_data = []
 
-#[generation number][point][0=location,1=rotation]
-gen_array_data = []
+	################################
+	###   CREATE CURVE OBJECT    ###
+	################################
+	fractalCurveData = bpy.data.curves.new(name="FractalCurve", type='CURVE')
+	obj = bpy.data.objects.new("CurveObj", fractalCurveData)
+	bpy.context.scene.objects.link(obj)
+	obj.data.resolution_u     = 1
+	obj.data.bevel_depth      = 0.1
+	obj.data.bevel_resolution = 1
+	obj.data.dimensions = '3D'
+	obj.data.fill_mode = 'FULL'
 
-################################
-###   CREATE CURVE OBJECT    ###
-################################
-fractalCurveData = bpy.data.curves.new(name="FractalCurve", type='CURVE')
-obj = bpy.data.objects.new("CurveObj", fractalCurveData)
-bpy.context.scene.objects.link(obj)
-obj.data.resolution_u     = 1
-obj.data.bevel_depth      = 0.1
-obj.data.bevel_resolution = 1
-obj.data.dimensions = '3D'
-obj.data.fill_mode = 'FULL'
+	#starting point
+	current_gen = 0
+	pointA=mathutils.Vector((0,0,0))
 
+	#generation 0 no split just add offset and create line.
+	spline = fractalCurveData.splines.new('BEZIER')
+	spline.bezier_points.add(1)
+	#spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
+	spline.bezier_points[0].co=mathutils.Vector((0,0,0))
+	spline.bezier_points[1].co=mathutils.Vector((seg_length,0,0))
+	gen_array_data=[[tuple([mathutils.Vector((seg_length,0,0)),mathutils.Vector((0,0,0))])]]
 
-#starting point
-current_gen = 0
-pointA=mathutils.Vector((0,0,0))
+	for i in range(1,int(gen_max+1)):
+		gen_array_data.append([])
+		lastGenerationPoints = gen_array_data[i-1]
+		#create two new points for each old point
+		for a in lastGenerationPoints:				#a = gen_array_data[i-1][a](loc,rot)
+			center = copy.copy(a[0]) 
+			for split in range(int(splits)):
+				newLocation = center + mathutils.Vector((seg_length,0,0))
+				newPoint = rotate_point(newLocation, center, split*(90/splits))
+				#create edges
+				spline = fractalCurveData.splines.new('BEZIER')
+				spline.bezier_points.add(1)
+				print(a[0])
+				print(newLocation)
+				spline.bezier_points[0].co=a[0]
+				spline.bezier_points[1].co=newPoint
 
-
-#generation 0 no split just add offset and create line.
-spline = fractalCurveData.splines.new('BEZIER')
-spline.bezier_points.add(1)
-#spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
-spline.bezier_points[0].co=mathutils.Vector((0,0,0))
-spline.bezier_points[1].co=mathutils.Vector((seg_length,0,0))
-gen_array_data=[[tuple([mathutils.Vector((seg_length,0,0)),mathutils.Vector((0,0,0))])]]
-
-
-for i in range(1,int(gen_max+1)):
-	lastGenerationPoints = gen_array_data[i-1]
-	#create two new points for each old point
-	for a in lastGenerationPoints:				#a = gen_array_data[i-1][a](loc,rot)
-		center = copy.copy(a[0]) 
-		for split in range(int(splits)):
-			newLocation = center+mathutils.Vector((seg_length,0,0))
-			newPoint = rotate_point(newLocation, center, split*(90/splits))
-			#create edges
-			spline = fractalCurveData.splines.new('BEZIER')
-			spline.bezier_points.add(1)
-			spline.bezier_points[0].co=center[0]
-			spline.bezier_points[1].co=newPoint
-			gen_array_data=[[tuple([mathutils.Vector((seg_length,0,0)),mathutils.Vector((0,0,0))])]]
-
-			#append point to gen_array_data
-			gen_array_data[i].append(mathutils.Vector((newPoint)),mathutils.Vector((0,0,split*(90/splits)+center[1])))
-
-
-	
-
-
-
-	
-
-
-	#add offset to point and create point a =(x+length,y,z)
-	#rotate point a around point b
-	#create segment
-	#do this for branch x and y
-	#store points in generation
-	#create points from generation set n-1(a) and n(children)
-
-
-
+				#append point to gen_array_data
+				#print(gen_array_data)
+				gen_array_data.append([])
+				gen_array_data[i].append(tuple(mathutils.Vector((newPoint)),mathutils.Vector((0,0,split*(90/splits)+center[1]))))
 
 class ToolsPanel(bpy.types.Panel):
-    bl_label = "Animatable Threshold Line Generator"
+    bl_label = "Animatable Fractal Line Generator"
     bl_space_type = "PROPERTIES"
     bl_region_type = "WINDOW"
     bl_context = "scene"
@@ -99,16 +85,39 @@ class ToolsPanel(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         row= layout.row()
-        row.prop(context.scene, "lineGenActivate")
+        row.operator("object.generate",icon="STICKY_UVS_DISABLE")
+        row= layout.row()
+        row.prop(context.scene, "genMax")
+        row= layout.row()
+        row.prop(context.scene, "genSize")
+        row= layout.row()
+        row.prop(context.scene, "genThick")
+        row= layout.row()
+        row.prop(context.scene, "genThickMod")
+        row= layout.row()
+        row.prop(context.scene, "segLength")
+        row= layout.row()
+        row.prop(context.scene, "segSplits")
+        row= layout.row()
+        row.prop(context.scene, "segSplitAngle")
+class Object_OT_generate(bpy.types.Operator):
+	'''Generate Fractal'''
+	bl_idname = "object.generate"
+	bl_label = "GENERATE FRACTAL"
+
+	@classmethod 
+	def poll(cls, context):
+		main(context)
+		return {'FINISHED'}
 def register():
-    bpy.types.Scene.curveOutward = BoolProperty(name="outward",description="forces curve outward away from 0,0,0", default=False)
-    bpy.types.Scene.segLength = bpy.props.FloatProperty(name="segment length", description="changes the base length of fractal edges", default=1, min=-10, max=10)
-    bpy.types.Scene.segSplits = bpy.props.FloatProperty(name="generation splits", description="changes the number of splits", default=1, min=-10, max=10)
-    bpy.types.Scene.segSplitAngle = bpy.props.FloatProperty(name="angle modulation", description="angle modulation of splits", default=0, min=0, max=180)
-    bpy.types.Scene.genMax = bpy.props.FloatProperty(name="number of generations", description="WARNING: KEEP LOW (change script if you want something beyond 10)", default=4, min=0, max=10)
-    bpy.types.Scene.genSize = bpy.props.FloatProperty(name="generation length modulation", description="generation * length", default=0.95, min=-10, max=10)
-    bpy.types.Scene.genThick = bpy.props.FloatProperty(name="base generation weight", description="base thickness", default=0.95, min=-10, max=10)
-    bpy.types.Scene.genThickMod = bpy.props.FloatProperty(name="generation weight modulation", description="generation * base thickness", default=1, min=-5, max=5)
+    bpy.types.Scene.curveOutward= BoolProperty(name="outward",description="forces curve outward away from 0,0,0", default=False)
+    bpy.types.Scene.segLength= bpy.props.FloatProperty(name="segment length", description="changes the base length of fractal edges", default=1, min=-10, max=10)
+    bpy.types.Scene.segSplits= bpy.props.FloatProperty(name="generation splits", description="changes the number of splits", default=1, min=-10, max=10)
+    bpy.types.Scene.segSplitAngle= bpy.props.FloatProperty(name="angle modulation", description="angle modulation of splits", default=0, min=0, max=180)
+    bpy.types.Scene.genMax= bpy.props.FloatProperty(name="number of generations", description="WARNING: KEEP LOW (change script if you want something beyond 10)", default=4, min=0, max=10)
+    bpy.types.Scene.genSize= bpy.props.FloatProperty(name="generation length modulation", description="generation * length", default=0.95, min=-10, max=10)
+    bpy.types.Scene.genThick= bpy.props.FloatProperty(name="base generation weight", description="base thickness", default=0.95, min=-10, max=10)
+    bpy.types.Scene.genThickMod= bpy.props.FloatProperty(name="generation weight modulation", description="generation * base thickness", default=1, min=-5, max=5)
 
     bpy.utils.register_module(__name__)
 def unregister():
@@ -122,18 +131,5 @@ def unregister():
 	del(bpy.types.Scene.genThickMod)
 	del(bpy.types.Scene.curveOutward)
 	del(bpy.types.Scene.pointLerp)
-
 if __name__ == "__main__":
     register()
-
-
-
-
-
-
-
-
-
-
-
-
