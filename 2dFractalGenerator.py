@@ -135,9 +135,9 @@ class Object_OT_generate(bpy.types.Operator):
 	def poll(cls, context):
 		main(context)
 		return {'FINISHED'}
-def angle_to_rad(x):
+def rad_to_angle(x):
 	return x * (180 / math.pi );
-def angle_to_degree(x):
+def angle_to_rad(x):
 	return x * (math.pi / 180);
 def rotate_point(point, center, angle):
 	angleInRadians = angle_to_rad(angle)
