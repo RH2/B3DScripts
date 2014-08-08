@@ -72,12 +72,12 @@ def my_handler(scene):
 				else:
 					break
 				newRotation_unformatted = newRotation
-				if abs(newRotation) != newRotation:
-					newRotation == -1*(newRotation % 360) 
-				else:
-					newRotation == (newRotation % 360)
-				if newRotation < 0 :
-					newRotation=360-newRotation
+				# if newRotation < 0:
+				# 	newRotation == -1*(newRotation % 360) 
+				# else:
+				# 	newRotation == (newRotation % 360)
+				# if newRotation < 0 :
+				# 	newRotation=360-newRotation
 				newPoint = rotate_point(newLocation, center, newRotation)
 				print("gen:",i," segment:",split," angle = ",newRotation_unformatted," CENTER:",center," newlocation:",newPoint)
 				#create edges
