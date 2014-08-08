@@ -72,7 +72,10 @@ def my_handler(scene):
 				else:
 					break
 				newRotation_unformatted = newRotation
-				newRotation = newRotation % 360
+				if abs(newRotation) != newRotation:
+					newRotation == -1*(newRotation % 360) 
+				else:
+					newRotation == (newRotation % 360)
 				if newRotation < 0 :
 					newRotation=360-newRotation
 				newPoint = rotate_point(newLocation, center, newRotation)
