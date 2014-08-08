@@ -32,8 +32,6 @@ def main(context):
 ##########     FRAME HANDLER     ######## 
 #########################################
 def my_handler(scene): 
-	print("frame change")
-
 	fractalCurveData.splines.clear()
 
 	origin = mathutils.Vector((0,0,0))
@@ -56,26 +54,35 @@ def my_handler(scene):
 	spline.bezier_points[0].co=mathutils.Vector((0,0,0))
 	spline.bezier_points[1].co=mathutils.Vector((seg_length,0,0))
 	gen_array_data=[[tuple([mathutils.Vector((seg_length,0,0)),mathutils.Vector((0,0,0))])]]
+	print("new frame-----------------------------------------------------------------------")
 	for i in range(1,int(gen_max+1)):
 		gen_array_data.append([])
 		lastGenerationPoints = gen_array_data[i-1]
 		#create two new points for each old point
 		for a in lastGenerationPoints:				#a = gen_array_data[i-1][a](loc,rot)
 			center = copy.copy(a[0]) 
-			for split in range(int(splits)):
-				newLocation = center + mathutils.Vector((seg_length,0,0))
-				newPoint = rotate_point(newLocation, center, split*(90/splits))
+			for split in range(splits):
+				newLocation = center + mathutils.Vector((seg_length*(gen_max-i),0,0))
+				newRotation = copy.copy(a[1][2])	#z axis rotation
+				#newRotation = split*(180/splits)+center[1]
+
+				newRotation += (-split_angle/2)+(split*(split_angle/(splits-1)))
+				newRotation_unformatted = newRotation
+				newRotation = newRotation % 360
+				if newRotation < 0 :
+					newRotation=360-newRotation
+				newPoint = rotate_point(newLocation, center, newRotation)
+				print("gen:",i," segment:",split," angle = ",newRotation_unformatted," CENTER:",center," newlocation:",newPoint)
 				#create edges
 				spline = fractalCurveData.splines.new('BEZIER')
 				spline.bezier_points.add(1)
-				print(a[0])
-				print(newLocation)
 				spline.bezier_points[0].co=a[0]
 				spline.bezier_points[1].co=newPoint
 				#append point to gen_array_data
 				#print(gen_array_data)
 				gen_array_data.append([])
-				gen_array_data[i].append(tuple(mathutils.Vector((newPoint)),mathutils.Vector((0,0,split*(90/splits)+center[1]))))
+				newTuple = (mathutils.Vector((newPoint)),mathutils.Vector((0,0,newRotation)))
+				gen_array_data[i].append(newTuple)
 
 class ToolsPanel(bpy.types.Panel):
     bl_label = "Animatable Fractal Line Generator"
@@ -85,8 +92,8 @@ class ToolsPanel(bpy.types.Panel):
     
     def draw(self, context):
         layout = self.layout
-        row= layout.row()
-        row.operator("object.generate",icon="STICKY_UVS_DISABLE")
+        #row= layout.row()
+        #row.operator("object.generate",icon="STICKY_UVS_DISABLE")
         row= layout.row()
         row.prop(context.scene, "genMax")
         row= layout.row()
@@ -111,18 +118,20 @@ class Object_OT_generate(bpy.types.Operator):
 		main(context)
 		return {'FINISHED'}
 def angle_to_rad(x):
+	return x * (180 / math.pi );
+def angle_to_degree(x):
 	return x * (math.pi / 180);
 def rotate_point(point, center, angle):
 	angleInRadians = angle_to_rad(angle)
 	cosTheta = math.cos(angleInRadians)
 	sinTheta = math.sin(angleInRadians)
-	pointC = mathutils.Vector((cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x , sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x,0))
+	pointC = mathutils.Vector((  -1*(cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x) , -1*(sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x)   ,0  ))
 	return pointC		
 def register():
     bpy.types.Scene.curveOutward= BoolProperty(name="outward",description="forces curve outward away from 0,0,0", default=False)
     bpy.types.Scene.segLength= bpy.props.FloatProperty(name="segment length", description="changes the base length of fractal edges", default=1, min=-10, max=10)
-    bpy.types.Scene.segSplits= bpy.props.FloatProperty(name="generation splits", description="changes the number of splits", default=1, min=-10, max=10)
-    bpy.types.Scene.segSplitAngle= bpy.props.FloatProperty(name="angle modulation", description="angle modulation of splits", default=0, min=0, max=180)
+    bpy.types.Scene.segSplits= bpy.props.IntProperty(name="generation splits", description="changes the number of splits", default=1, min=-10, max=10,subtype='UNSIGNED')
+    bpy.types.Scene.segSplitAngle= bpy.props.FloatProperty(name="base angle", description="angle modulation of splits", default=90, min=0, max=180)
     bpy.types.Scene.genMax= bpy.props.IntProperty(name="Generations", description="number of generations to compute",default = 5, min = 0, max=100, subtype='UNSIGNED')
     bpy.types.Scene.genSize= bpy.props.FloatProperty(name="generation length modulation", description="generation * length", default=0.95, min=-10, max=10)
     bpy.types.Scene.genThick= bpy.props.FloatProperty(name="base generation weight", description="base thickness", default=0.95, min=-10, max=10)
