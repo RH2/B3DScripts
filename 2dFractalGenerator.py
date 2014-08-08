@@ -53,6 +53,8 @@ def my_handler(scene):
 	#spline.bezier_points.foreach_set("co", unpack_list(coordinate_Pairs))
 	spline.bezier_points[0].co=mathutils.Vector((0,0,0))
 	spline.bezier_points[1].co=mathutils.Vector((seg_length,0,0))
+	spline.bezier_points[0].radius = .01
+	spline.bezier_points[1].radius = .01
 	gen_array_data=[[tuple([mathutils.Vector((seg_length,0,0)),mathutils.Vector((0,0,0))])]]
 	print("new frame-----------------------------------------------------------------------")
 	for i in range(1,int(gen_max+1)):
@@ -84,6 +86,10 @@ def my_handler(scene):
 				spline.bezier_points[0].handle_right_type='VECTOR'
 				spline.bezier_points[1].handle_left_type='VECTOR'
 				spline.bezier_points[1].handle_right_type='VECTOR'
+
+				spline.bezier_points[0].radius = .01
+				spline.bezier_points[1].radius = .01
+
 
 
 
@@ -134,7 +140,8 @@ def rotate_point(point, center, angle):
 	angleInRadians = angle_to_rad(angle)
 	cosTheta = math.cos(angleInRadians)
 	sinTheta = math.sin(angleInRadians)
-	pointC = mathutils.Vector((  -1*(cosTheta * (point.x-center.x)-sinTheta*(point.y-center.y)+center.x) , -1*(sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y)+center.x)   ,0  ))
+	pointC = mathutils.Vector((  (cosTheta*(point.x-center.x) -sinTheta*(point.y-center.y) +center.x) , (sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y) +center.y)   ,0  ))
+	#pointC = mathutils.Vector((  (sinTheta*(point.x-center.x)+cosTheta*(point.y-center.y) +center.y)   , (cosTheta*(point.x-center.x) -sinTheta*(point.y-center.y) +center.x)  ,0  ))
 	return pointC		
 def register():
     bpy.types.Scene.curveOutward= BoolProperty(name="outward",description="forces curve outward away from 0,0,0", default=False)
