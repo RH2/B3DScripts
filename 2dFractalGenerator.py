@@ -65,8 +65,10 @@ def my_handler(scene):
 				newLocation = center + mathutils.Vector(((seg_length*(gen_size**i)),0,0))
 				newRotation = copy.copy(a[1][2])	#z axis rotation
 				#newRotation = split*(180/splits)+center[1]
-
-				newRotation += (-split_angle/2)+(split*(split_angle/(splits-1)))
+				if splits > 1:
+					newRotation += (-split_angle/2)+(split*(split_angle/(splits-1)))
+				else:
+					break
 				newRotation_unformatted = newRotation
 				newRotation = newRotation % 360
 				if newRotation < 0 :
@@ -78,6 +80,13 @@ def my_handler(scene):
 				spline.bezier_points.add(1)
 				spline.bezier_points[0].co=a[0]
 				spline.bezier_points[1].co=newPoint
+				spline.bezier_points[0].handle_left_type='VECTOR'
+				spline.bezier_points[0].handle_right_type='VECTOR'
+				spline.bezier_points[1].handle_left_type='VECTOR'
+				spline.bezier_points[1].handle_right_type='VECTOR'
+
+
+
 				#append point to gen_array_data
 				#print(gen_array_data)
 				gen_array_data.append([])
