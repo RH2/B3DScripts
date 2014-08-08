@@ -62,7 +62,7 @@ def my_handler(scene):
 		for a in lastGenerationPoints:				#a = gen_array_data[i-1][a](loc,rot)
 			center = copy.copy(a[0]) 
 			for split in range(splits):
-				newLocation = center + mathutils.Vector((seg_length*(gen_max-i),0,0))
+				newLocation = center + mathutils.Vector(((seg_length*(gen_size**i)),0,0))
 				newRotation = copy.copy(a[1][2])	#z axis rotation
 				#newRotation = split*(180/splits)+center[1]
 
