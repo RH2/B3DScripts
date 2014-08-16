@@ -7,8 +7,6 @@ def main(context):
 	#obj = bpy.context.object 
 	#original_type = bpy.context.area.type
 	obj = bpy.data.objects['BezierCurve.002']
-	bpy.ops.object.mode_set(mode = 'OBJECT')
-	bpy.ops.object.mode_set(mode = 'EDIT')
 	bpy.ops.mesh.select_all(action="DESELECT")
 	#bpy.context.area.type = "VIEW_3D"
 	a = len(obj.data.polygons)
@@ -16,11 +14,10 @@ def main(context):
 
 		obj.data.polygons[index].select=True
 		obj.data.polygons.active = index
-		bpy.ops.mesh.select_linked_pick(deselect=True, limit=True)
-		bpy.ops.uv.follow_active_quads('INVOKE_DEFAULT',mode='LENGTH_AVERAGE')
+		bpy.ops.mesh.select_linked_pick(deselect=False, limit=True)
+		bpy.ops.uv.follow_active_quads(mode='LENGTH_AVERAGE')
 		#f.hide=False 
 		#bpy.ops.mesh.reveal()
-	bpy.ops.object.mode_set(mode = 'OBJECT')
 	#bpy.context.area.type = original_type
 
 
