@@ -1,5 +1,8 @@
+#GPL license. 
+#requires http://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/UV/UV_Align_Distribution
+#--&--    http://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/3D_interaction/Align_Tools
 bl_info = {
-    "name": "META PIE MENU",
+    "name": "RH2 META PIE MENU",
     "author": "MKB, RH2",
     "version": (0, 0, 5),
     "blender": (2, 7, 2),
@@ -49,6 +52,7 @@ class VIEW3D_PIE_metaB(Menu):
     bl_idname = "meta.piemenuB"
 
     def draw(self, context):
+        ob = context 
         layout = self.layout
         settings = context.tool_settings
         layout.operator_context = 'INVOKE_REGION_WIN'
@@ -66,6 +70,7 @@ class VIEW3D_PIE_metaC(Menu):
     bl_idname = "meta.piemenuC"
 
     def draw(self, context):
+
         layout = self.layout
         settings = context.tool_settings
         layout.operator_context = 'INVOKE_REGION_WIN'
@@ -376,14 +381,6 @@ def register():
         #your idname for the menu
         kmi.properties.name = "meta.piemenuD"
 
-
-
-
-
-
-
-
-
 def unregister():
     bpy.utils.register_class(VIEW3D_PIE_metaA)
     bpy.utils.register_class(VIEW3D_PIE_metaB)
@@ -408,12 +405,3 @@ if __name__ == "__main__":
     bpy.ops.wm.call_menu_pie(name="VIEW3D_PIE_metaB")
     bpy.ops.wm.call_menu_pie(name="VIEW3D_PIE_metaC")
     bpy.ops.wm.call_menu_pie(name="VIEW3D_PIE_metaD")
-
-
-
-
-
-
-
-
-
