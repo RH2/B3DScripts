@@ -2,7 +2,7 @@
 #requires http://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/UV/UV_Align_Distribution
 #--&--    http://wiki.blender.org/index.php/Extensions:2.6/Py/Scripts/3D_interaction/Align_Tools
 bl_info = {
-    "name": "RH2 META PIE MENU",
+    "name": "Mouse pie menus",
     "author": "MKB, RH2",
     "version": (0, 0, 5),
     "blender": (2, 7, 2),
@@ -15,6 +15,7 @@ bl_info = {
     
 import bpy
 from bpy.types import Menu
+print("--------running mouse pie script-----------")
 ###########################################################################################
 class VIEW3D_PIE_metaA(Menu):
     # label is displayed at the center of the pie menu.
@@ -44,8 +45,6 @@ class VIEW3D_PIE_metaA(Menu):
             pie.operator("mesh.mark_sharp", "+ sharp").clear = False
             pie.operator("mesh.remove_doubles")                   
 
-
-
 class VIEW3D_PIE_metaB(Menu):
     # label is displayed at the center of the pie menu.
     bl_label = "META 2"
@@ -61,8 +60,6 @@ class VIEW3D_PIE_metaB(Menu):
 
         pie = layout.menu_pie()
         pie.operator_enum("mesh.select_mode", "type")                   
-
-
 
 class VIEW3D_PIE_metaC(Menu):
     # label is displayed at the center of the pie menu.
@@ -96,7 +93,6 @@ class VIEW3D_PIE_metaC(Menu):
             pie.operator("export_scene.obj","OBJ")
             pie.operator("wm.collada_export","DAE")
             pie.operator("export_mesh.stl","STL")                        
-
 
 class VIEW3D_PIE_metaD(Menu):
     # label is displayed at the center of the pie menu.
@@ -272,73 +268,68 @@ class VIEW3D_PIE_metaD(Menu):
             #_6_Top_Right
             #_7_Bottom_Left
             #_8_Bottom_Right
-####### Vertex paint menu -----------------------------------------
-        elif ob.mode == 'PAINT_VERTEX':
-            # Vertex paint menu
-            pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
-            #_1_Left
-            #_2_Right
-            #_3_Bottom
-            #_4_Top
-            #_5_Top_Left
-            #_6_Top_Right
-            #_7_Bottom_Left
-            #_8_Bottom_Right
-####### Texture paint menu ----------------------------------------
-        elif ob.mode == 'PAINT_TEXTURE':
-            # Texture paint menu 
-            pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
-            #_1_Left
-            #_2_Right
-            #_3_Bottom
-            #_4_Top
-            #_5_Top_Left
-            #_6_Top_Right
-            #_7_Bottom_Left
-            #_8_Bottom_Right
-####### Sculpt menu -----------------------------------------------
-        elif ob.mode == 'SCULPT':
-            # Sculpt menu 
-            pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
-            #_1_Left
-            #_2_Right
-            #_3_Bottom
-            #_4_Top
-            #_5_Top_Left
-            #_6_Top_Right
-            #_7_Bottom_Left
-            #_8_Bottom_Right
-####### Armature menu ---------------------------------------------
-        elif ob.mode == 'EDIT':
-            # Armature menu 
-            pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
-            #_1_Left
-            #_2_Right
-            #_3_Bottom
-            #_4_Top
-            #_5_Top_Left
-            #_6_Top_Right
-            #_7_Bottom_Left
-            #_8_Bottom_Right
-####### Pose mode menu --------------------------------------------
-        if context.mode == 'POSE':
-            # Pose mode menu
-            arm = context.active_object.data   
-            pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
-            #_1_Left
-            #_2_Right
-            #_3_Bottom
-            #_4_Top
-            #_5_Top_Left
-            #_6_Top_Right
-            #_7_Bottom_Left
-            #_8_Bottom_Right                                   
-    
-
-def abs(val):
-    if val > 0:
-        return val
-    return -val
+# ####### Vertex paint menu -----------------------------------------
+#         elif ob.mode == 'PAINT_VERTEX':
+#             # Vertex paint menu
+#             pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
+#             #_1_Left
+#             #_2_Right
+#             #_3_Bottom
+#             #_4_Top
+#             #_5_Top_Left
+#             #_6_Top_Right
+#             #_7_Bottom_Left
+#             #_8_Bottom_Right
+# ####### Texture paint menu ----------------------------------------
+#         elif ob.mode == 'PAINT_TEXTURE':
+#             # Texture paint menu 
+#             pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
+#             #_1_Left
+#             #_2_Right
+#             #_3_Bottom
+#             #_4_Top
+#             #_5_Top_Left
+#             #_6_Top_Right
+#             #_7_Bottom_Left
+#             #_8_Bottom_Right
+# ####### Sculpt menu -----------------------------------------------
+#         elif ob.mode == 'SCULPT':
+#             # Sculpt menu 
+#             pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
+#             #_1_Left
+#             #_2_Right
+#             #_3_Bottom
+#             #_4_Top
+#             #_5_Top_Left
+#             #_6_Top_Right
+#             #_7_Bottom_Left
+#             #_8_Bottom_Right
+# ####### Armature menu ---------------------------------------------
+#         elif ob.mode == 'EDIT':
+#             # Armature menu 
+#             pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
+#             #_1_Left
+#             #_2_Right
+#             #_3_Bottom
+#             #_4_Top
+#             #_5_Top_Left
+#             #_6_Top_Right
+#             #_7_Bottom_Left
+#             #_8_Bottom_Right
+# ####### Pose mode menu --------------------------------------------
+#         if context.mode == 'POSE':
+#             # Pose mode menu
+#             arm = context.active_object.data   
+#             pie.operator_enum("VIEW3D_MT_TransformMenu", icon='MANIPUL')
+#             #_1_Left
+#             #_2_Right
+#             #_3_Bottom
+#             #_4_Top
+#             #_5_Top_Left
+#             #_6_Top_Right
+#             #_7_Bottom_Left
+#             #_8_Bottom_Right                                   
+addon_keymaps = []
 def register():
     bpy.utils.register_class(VIEW3D_PIE_metaA)
     bpy.utils.register_class(VIEW3D_PIE_metaB)
@@ -346,62 +337,32 @@ def register():
     bpy.utils.register_class(VIEW3D_PIE_metaD)
 
     wm = bpy.context.window_manager
-    kc = wm.keyconfigs.addon
-    if kc:  
-        #change here the Location of your Menu_1
-        km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
-        #change here the Hotkey of your Menu
+    if wm.keyconfigs.addon:
+        km = wm.keyconfigs.addon.keymaps.new(name='Object Non-modal')
         kmi = km.keymap_items.new('wm.call_menu_pie', 'BUTTON4MOUSE', 'PRESS')
-        #ctrl=True, alt=True, shift=True)
-        #---------------------------------
-        #your idname for the menu
-        kmi.properties.name = "meta.piemenuA"
-        #change here the Location of your Menu_1
-        km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
-        #change here the Hotkey of your Menu
+        kmi.properties.name = 'meta.piemenuA'
         kmi = km.keymap_items.new('wm.call_menu_pie', 'BUTTON5MOUSE', 'PRESS')
-        #ctrl=True, alt=True, shift=True)
-        #---------------------------------
-        #your idname for the menu
-        kmi.properties.name = "meta.piemenuB"
-        #change here the Location of your Menu_1
-        km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
-        #change here the Hotkey of your Menu
+        kmi.properties.name = 'meta.piemenuB'
         kmi = km.keymap_items.new('wm.call_menu_pie', 'PAGE_UP', 'PRESS')
-        #ctrl=True, alt=True, shift=True)
-        #---------------------------------
-        #your idname for the menu
-        kmi.properties.name = "meta.piemenuC"
-        #change here the Location of your Menu_1
-        km = kc.keymaps.new(name='3D View', space_type='VIEW_3D')
-        #change here the Hotkey of your Menu
+        kmi.properties.name = 'meta.piemenuC'
         kmi = km.keymap_items.new('wm.call_menu_pie', 'PAGE_DOWN', 'PRESS')
-        #ctrl=True, alt=True, shift=True)
-        #---------------------------------
-        #your idname for the menu
-        kmi.properties.name = "meta.piemenuD"
+        kmi.properties.name = 'meta.piemenuD'
 
+        addon_keymaps.append(km)
 def unregister():
-    bpy.utils.register_class(VIEW3D_PIE_metaA)
-    bpy.utils.register_class(VIEW3D_PIE_metaB)
-    bpy.utils.register_class(VIEW3D_PIE_metaC)
-    bpy.utils.register_class(VIEW3D_PIE_metaD)
+    bpy.utils.unregister_class(VIEW3D_PIE_metaA)
+    bpy.utils.unregister_class(VIEW3D_PIE_metaB)
+    bpy.utils.unregister_class(VIEW3D_PIE_metaC)
+    bpy.utils.unregister_class(VIEW3D_PIE_metaD)
 
     wm = bpy.context.window_manager
-    kc = wm.keyconfigs.addon
-    if kc:
-        #change here the Location of your Menu_2
-        km = kc.keymaps['3D View']
-        ##########################
-        for kmi in km.keymap_items:
-            if kmi.idname == 'wm.call_menu_pie':
-                if kmi.properties.name == "":
-                    km.keymap_items.remove(kmi)
-                    break           
-if __name__ == "__main__":
-    register()
-    #test the script inside blender text editor
-    bpy.ops.wm.call_menu_pie(name="VIEW3D_PIE_metaA")
-    bpy.ops.wm.call_menu_pie(name="VIEW3D_PIE_metaB")
-    bpy.ops.wm.call_menu_pie(name="VIEW3D_PIE_metaC")
-    bpy.ops.wm.call_menu_pie(name="VIEW3D_PIE_metaD")
+
+    if wm.keyconfigs.addon:
+        for km in addon_keymaps:
+            for kmi in km.keymap_items:
+                km.keymap_items.remove(kmi)
+
+            wm.keyconfigs.addon.keymaps.remove(km)
+
+    # clear the list
+    del addon_keymaps[:]
