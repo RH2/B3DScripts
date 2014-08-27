@@ -23,12 +23,13 @@ class VIEW3D_PIE_edgeOps(Menu):
         pie.operator("mesh.mark_sharp", "+ sharp").clear = False
         pie.operator("mesh.remove_doubles")
 
-class VIEW3D_PIE_object_exportOptions(Menu):
+class VIEW3D_OT_PIE_object_exportOptions(Menu):
     bl_label = "Export"
+    bl_idname = "OBJECT_OT_export"
     #bl_context = "objectmode"
     def draw(self, context):
+        #newContext = bpy.context.selected_objects
         layout = self.layout
-        newContext = bpy.context.selected_objects
         pie = layout.menu_pie() 
         #pie.operator("export_scene.fbx","FBX")
         #pie.operator("export_scene.obj","OBJ")
@@ -56,16 +57,16 @@ class VIEW3D_PIE_object_exportOptions(Menu):
 def register():
     bpy.utils.register_class(VIEW3D_PIE_selectMode)  
     bpy.utils.register_class(VIEW3D_PIE_edgeOps)  
-    bpy.utils.register_class(VIEW3D_PIE_object_exportOptions)  
+    bpy.utils.register_class(VIEW3D_OT_PIE_object_exportOptions)  
      
     wm = bpy.context.window_manager
     km = wm.keyconfigs.addon.keymaps.new(name="Mesh")
     kmi = km.keymap_items.new("wm.call_menu_pie", "BUTTON5MOUSE","PRESS", shift=False,ctrl=False).properties.name="mesh.selectMode"
     kmi = km.keymap_items.new("wm.call_menu_pie", "BUTTON4MOUSE","PRESS", shift=False,ctrl=False).properties.name="mesh.edgeOps"
-    kmi = km.keymap_items.new("wm.call_menu_pie", 'PAGE_UP',"PRESS", shift=False,ctrl=False).properties.name="VIEW3D_PIE_object_exportOptions"
+    kmi = km.keymap_items.new("wm.call_menu_pie", 'PAGE_UP',"PRESS", shift=False,ctrl=False).properties.name="OBJECT_OT_export"
 def unregister():
     bpy.utils.unregister_class(VIEW3D_PIE_selectMode)
     bpy.utils.unregister_class(VIEW3D_PIE_edgeOps)  
-    bpy.utils.unregister_class(VIEW3D_PIE_object_exportOptions) 
+    bpy.utils.unregister_class(VIEW3D_OT_PIE_object_exportOptions) 
 if __name__ == "__main__":
     register()
