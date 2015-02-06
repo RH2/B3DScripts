@@ -59,7 +59,8 @@ class VIEW3D_PIE_metaB(Menu):
         mesh = context.active_object.data               
 
         pie = layout.menu_pie()
-        pie.operator_enum("mesh.select_mode", "type")                   
+        pie.operator_enum("mesh.select_mode", "type") 
+        pie.operator("object.modifier_add", "ADD MIRROR", icon="MOD_MIRROR").type="MIRROR"                  
 
 class VIEW3D_PIE_metaC(Menu):
     # label is displayed at the center of the pie menu.
