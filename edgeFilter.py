@@ -37,7 +37,11 @@ D=bpy.data
 img=bpy.data.images["image"]
 img_width=img.size[1]
 img_height=img.size[0]
-temp = [None] * img_width*img_height*4
+temp = [0] * img_width*img_height*4
+img_copy= [0] * img_width*img_height*4
+for px in range(len(img.pixels)):
+	img_copy[px] = copy.copy(img.pixels[px])
+
 for row in range(img_width):
 	indexAdd=(row*4*img_width)
 	for col in range(img_height):
@@ -47,9 +51,9 @@ for row in range(img_width):
 		check_right=False
 		currentPixel=mathutils.Color()
 		comparePixel=mathutils.Color()
-		currentPixel.r=copy.copy(img.pixels[indexAdd+(col*4)+0])
-		currentPixel.g=copy.copy(img.pixels[indexAdd+(col*4)+1])
-		currentPixel.b=copy.copy(img.pixels[indexAdd+(col*4)+2])
+		currentPixel.r=copy.copy(img_copy[indexAdd+(col*4)+0])
+		currentPixel.g=copy.copy(img_copy[indexAdd+(col*4)+1])
+		currentPixel.b=copy.copy(img_copy[indexAdd+(col*4)+2])
 		thisEdgeIntensity=mathutils.Color()
 		thisEdgeIntensity.hsv=[0,0,0]
 
@@ -67,59 +71,43 @@ for row in range(img_width):
 			check_right=True
 
 		if(check_up==True):
-			comparePixel.r=img.pixels[indexAdd+(col*4)+0+img_width]
-			comparePixel.g=img.pixels[indexAdd+(col*4)+1+img_width]
-			comparePixel.b=img.pixels[indexAdd+(col*4)+2+img_width]
+			comparePixel.r=img_copy[indexAdd+((4*img_width)-4)+(col*4)+0]
+			comparePixel.g=img_copy[indexAdd+((4*img_width)-4)+(col*4)+1]
+			comparePixel.b=img_copy[indexAdd+((4*img_width)-4)+(col*4)+2]
 			thisEdgeIntensity.v+=abs(currentPixel.v-comparePixel.v)/8
-			thisEdgeIntensity.s+=1
-			thisEdgeIntensity.h+=abs(currentPixel.v-comparePixel.v)/2
+			thisEdgeIntensity.h+=0.1*thisEdgeIntensity.v
+			thisEdgeIntensity.s+=1	
 		if(check_down==True):
-			comparePixel.r=img.pixels[indexAdd+(col*4)+0-img_width]
-			comparePixel.g=img.pixels[indexAdd+(col*4)+1-img_width]
-			comparePixel.b=img.pixels[indexAdd+(col*4)+2-img_width]
+			comparePixel.r=img_copy[indexAdd-((4*img_width)+4)+(col*4)+0]
+			comparePixel.g=img_copy[indexAdd-((4*img_width)+4)+(col*4)+1]
+			comparePixel.b=img_copy[indexAdd-((4*img_width)+4)+(col*4)+2]
 			thisEdgeIntensity.v+=abs(currentPixel.v-comparePixel.v)/8
-			thisEdgeIntensity.h+=abs(currentPixel.v-comparePixel.v)/4		
+			thisEdgeIntensity.h+=0.1*thisEdgeIntensity.v
+			thisEdgeIntensity.s+=1		
 		if(check_right==True):
-			comparePixel.r=img.pixels[indexAdd+(col*4)+0+4]
-			comparePixel.g=img.pixels[indexAdd+(col*4)+1+4]
-			comparePixel.b=img.pixels[indexAdd+(col*4)+2+4]
+			comparePixel.r=img_copy[indexAdd+(col*4)+0+4]
+			comparePixel.g=img_copy[indexAdd+(col*4)+1+4]
+			comparePixel.b=img_copy[indexAdd+(col*4)+2+4]
 			thisEdgeIntensity.v+=abs(currentPixel.v-comparePixel.v)/8
+			thisEdgeIntensity.h+=0.1*thisEdgeIntensity.v
+			thisEdgeIntensity.s+=1	
 		if(check_left==True):
-			comparePixel.r=img.pixels[indexAdd+(col*4)+0-4]
-			comparePixel.g=img.pixels[indexAdd+(col*4)+1-4]
-			comparePixel.b=img.pixels[indexAdd+(col*4)+2-4]
+			comparePixel.r=img_copy[indexAdd+(col*4)+0-4]
+			comparePixel.g=img_copy[indexAdd+(col*4)+1-4]
+			comparePixel.b=img_copy[indexAdd+(col*4)+2-4]
 			thisEdgeIntensity.v+=abs(currentPixel.v-comparePixel.v)/8
-		if(check_up==True and check_left==True):
-			comparePixel.r=img.pixels[indexAdd+(col*4)+0+img_width-4]
-			comparePixel.g=img.pixels[indexAdd+(col*4)+1+img_width-4]
-			comparePixel.b=img.pixels[indexAdd+(col*4)+2+img_width-4]
-			thisEdgeIntensity.v+=abs(currentPixel.v-comparePixel.v)/8
-		if(check_up==True and check_right==True):
-			comparePixel.r=img.pixels[indexAdd+(col*4)+0+img_width+4]
-			comparePixel.g=img.pixels[indexAdd+(col*4)+1+img_width+4]
-			comparePixel.b=img.pixels[indexAdd+(col*4)+2+img_width+4]
-			thisEdgeIntensity.v+=abs(currentPixel.v-comparePixel.v)/8		
-		if(check_down==True and check_left==True):
-			comparePixel.r=img.pixels[indexAdd+(col*4)+0-img_width-4]
-			comparePixel.g=img.pixels[indexAdd+(col*4)+1-img_width-4]
-			comparePixel.b=img.pixels[indexAdd+(col*4)+2-img_width-4]
-			thisEdgeIntensity.v+=abs(currentPixel.v-comparePixel.v)/8
-		if(check_down==True and check_right==True):
-			comparePixel.r=img.pixels[indexAdd+(col*4)+0-img_width+4]
-			comparePixel.g=img.pixels[indexAdd+(col*4)+1-img_width+4]
-			comparePixel.b=img.pixels[indexAdd+(col*4)+2-img_width+4]
-			thisEdgeIntensity.v+=abs(currentPixel.v-comparePixel.v)/8				
-
-
+			thisEdgeIntensity.h+=0.1*thisEdgeIntensity.v
+			thisEdgeIntensity.s+=1	
 
 		temp[indexAdd+(col*4)+0]=thisEdgeIntensity.r*2
 		temp[indexAdd+(col*4)+1]=thisEdgeIntensity.g*2
 		temp[indexAdd+(col*4)+2]=thisEdgeIntensity.b*2
 		temp[indexAdd+(col*4)+3]=1.0
 
-
-img.pixels=temp
-coverageMap = [50] *(img_width*img_height)
+for px in range(len(img_copy)):
+	img_copy[px]=img_copy[px]*.5 + temp[px]*2
+img.pixels=img_copy
+coverageMap = [0] *(img_width*img_height)
 for row in range(img_width):
 	indexAdd=(row*4*img_width)
 	for col in range(img_height):
