@@ -116,14 +116,19 @@ def UNIFY_EXPORT():
                     rigObj.animation_data.action = actiondata
                     ####Create NLA strips
                     track = rigObj.animation_data.nla_tracks.new()
-                    newStrip = track.strips.new(actiondata.name, actiondata.frame_range[0], actiondata)
-                    rigObj.animation_data.action = None
-                    bpy.context.area.type = "NLA_EDITOR"
-                    bpy.ops.nla.actionclip_add(action=actionString)
-                    bpy.ops.anim.channels_clean_empty()
+                    #newStrip = track.strips.new(actiondata.name, actiondata.frame_range[0], actiondata)
+                    #rigObj.animation_data.action = None
+                    #bpy.context.area.type = "NLA_EDITOR"
+                    #bpy.ops.nla.actionclip_add(action=actionString)
+                    #bpy.ops.anim.channels_clean_empty()
         bpy.ops.object.exportforunreal()
     bpy.context.area.type = original_context
-
+def SAVEALLACTIONS():
+    for action in bpy.data.actions:
+        action.use_fake_user=True
+#ease of life changes TODO: UNIFY_NEW("newActionName")
+#ease of life changes TODO: UNIFY_COPY("oldActionName","newActionName")
 UNIFY_INITIALIZE()
+SAVEALLACTIONS()
 UNIFY_UPDATE()
 UNIFY_EXPORT()
